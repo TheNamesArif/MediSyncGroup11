@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Medisync">
+
+        <!-- Patient Activities -->
+        <activity android:name=".patient.TakenStatusActivity" android:exported="false" />
+        <activity android:name=".patient.MedicineScheduleActivity" android:exported="false" />
+        <activity android:name=".patient.PatientProfileActivity" android:exported="false" />
+        <activity android:name=".patient.PatientHomeActivity" android:exported="false" />
+
+        <!-- Doctor Activities -->
+        <activity android:name=".doctor.PatientDetailActivity" android:exported="false" />
+        <activity android:name=".doctor.ManageScheduleActivity" android:exported="false" />
+        <activity android:name=".doctor.DoctorProfileActivity" android:exported="false" />
+        <activity android:name=".doctor.DoctorHomeActivity" android:exported="false" />
+
+        <!-- Auth Activities -->
+        <activity android:name=".auth.ForgotPasswordActivity" android:exported="false" />
+        <activity android:name=".auth.RegisterActivity" android:exported="false" />
+        <activity android:name=".auth.LoginActivity" android:exported="false" />
+
+        <!-- Splash (Launcher) -->
+        <activity
+            android:name=".auth.SplashActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".MainActivity" android:exported="false" />
+
+    </application>
+
+</manifest>
