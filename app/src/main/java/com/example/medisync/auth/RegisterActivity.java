@@ -15,6 +15,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.medisync.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -96,7 +99,17 @@ public class RegisterActivity extends AppCompatActivity {
                             });
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(RegisterActivity.this, "Auth Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    String errorMsg;
+                    if (e instanceof FirebaseAuthUserCollisionException) {
+                        errorMsg = "This email is already registered. Please log in instead.";
+                    } else if (e instanceof FirebaseAuthWeakPasswordException) {
+                        errorMsg = "Password is too weak.";
+                    } else if (e instanceof FirebaseAuthInvalidCredentialsException) {
+                        errorMsg = "Invalid email format.";
+                    } else {
+                        errorMsg = "Registration failed: " + e.getMessage();
+                    }
+                    Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
                     registerBtn.setEnabled(true);
                 });
     }
