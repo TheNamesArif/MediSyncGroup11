@@ -1,26 +1,56 @@
 package com.example.medisync.auth;
 
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Patterns;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.medisync.R;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
+
+    EditText emailEdit;
+    Button resetBtn;
+    FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_forgot_password);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        emailEdit = findViewById(R.id.email);
+        resetBtn = findViewById(R.id.resetBtn);
+
+        mAuth = FirebaseAuth.getInstance();
+
+        resetBtn.setOnClickListener(v -> resetPassword());
+    }
+
+    private void resetPassword() {
+        String email = emailEdit.getText().toString().trim();
+
+        if (TextUtils.isEmpty(email)) {
+            emailEdit.setError("Email is required");
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailEdit.setError("Enter valid email");
+            return;
+        }
+
+        mAuth.sendPasswordResetEmail(email)
+                .addOnSuccessListener(unused -> {
+                    Toast.makeText(this, "Reset link sent to your email", Toast.LENGTH_LONG).show();
+                    finish(); // Optionally close activity after success
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
     }
 }

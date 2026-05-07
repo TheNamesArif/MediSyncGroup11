@@ -30,8 +30,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        forgotPassword = findViewById(R.id.forgotPassword);
-
         // Initialize Firebase
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -41,6 +39,7 @@ public class LoginActivity extends AppCompatActivity {
         passwordEdit = findViewById(R.id.password);
         loginBtn = findViewById(R.id.loginBtn);
         registerLink = findViewById(R.id.registerLink);
+        forgotPassword = findViewById(R.id.forgotPassword);
 
         // Handle Login button click
         loginBtn.setOnClickListener(v -> loginUser());
@@ -50,25 +49,12 @@ public class LoginActivity extends AppCompatActivity {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
         });
-        //Click listener
-        forgotPassword.setOnClickListener(v -> resetPassword());
 
-    }
-    private void resetPassword() {
-        String email = emailEdit.getText().toString().trim();
-
-        if (TextUtils.isEmpty(email)) {
-            Toast.makeText(this, "Enter your email to reset password", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        mAuth.sendPasswordResetEmail(email)
-                .addOnSuccessListener(unused -> {
-                    Toast.makeText(this, "Reset link sent to your email", Toast.LENGTH_LONG).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+        // Handle "Forgot Password" link click
+        forgotPassword.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void loginUser() {
@@ -85,7 +71,9 @@ public class LoginActivity extends AppCompatActivity {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(authResult -> {
                     // Success! Now fetch the role.
-                    checkUserRole(authResult.getUser().getUid());
+                    if (authResult.getUser() != null) {
+                        checkUserRole(authResult.getUser().getUid());
+                    }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(LoginActivity.this, "Login Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -101,14 +89,14 @@ public class LoginActivity extends AppCompatActivity {
                         
                         if ("Patient".equals(role)) {
                             startActivity(new Intent(LoginActivity.this, PatientHomeActivity.class));
+                            finish();
                         } else if ("Doctor".equals(role)) {
                             startActivity(new Intent(LoginActivity.this, DoctorHomeActivity.class));
+                            finish();
                         } else {
                             Toast.makeText(this, "Unauthorized or unknown role", Toast.LENGTH_SHORT).show();
                             loginBtn.setEnabled(true);
-                            return;
                         }
-                        finish();
                     } else {
                         Toast.makeText(this, "User role not found.", Toast.LENGTH_SHORT).show();
                         loginBtn.setEnabled(true);
