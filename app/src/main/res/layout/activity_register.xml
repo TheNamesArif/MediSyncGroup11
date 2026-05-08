@@ -16,7 +16,7 @@
         app:srcCompat="@mipmap/ic_launcher_foreground" />
 
     <TextView
-        android:text="Create Account"
+        android:text="Sign Up"
         android:textSize="24sp"
         android:textStyle="bold"
         android:layout_marginBottom="20dp"

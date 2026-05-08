@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
-        android:text="MediSync Login"
+        android:text="Login to your Account"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -38,6 +38,17 @@
         android:autofillHints="password"
         android:hint="Password"
         android:inputType="textPassword" />
+
+    <TextView
+        android:id="@+id/forgotPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="Forgot Password? Press Here"
+        android:textColor="#0000FF"
+        android:textSize="14sp" />
 
     <Button
         android:id="@+id/loginBtn"
@@ -58,16 +69,5 @@
         android:text="Don't have an account? Register"
         android:textColor="#0000FF"
         android:textSize="16sp" />
-
-    <TextView
-        android:id="@+id/forgotPassword"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Forgot Password? Press Here"
-        android:textColor="#0000FF"
-        android:textSize="14sp"
-        android:layout_marginTop="8dp"
-        android:clickable="true"
-        android:focusable="true"/>
 
 </LinearLayout>
