@@ -36,6 +36,13 @@
         android:layout_height="wrap_content"/>
 
     <Button
+        android:id="@+id/btnChangePassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#248c2d"
+        android:text="Change Password" />
+
+    <Button
         android:id="@+id/btnLogout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

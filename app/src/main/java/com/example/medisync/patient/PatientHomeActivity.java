@@ -12,6 +12,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.medisync.R;
+import com.example.medisync.auth.ChangePasswordActivity;
 import com.example.medisync.auth.LoginActivity;
 import com.example.medisync.doctor.DoctorHomeActivity;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,6 +33,13 @@ public class PatientHomeActivity extends AppCompatActivity {
         // Logout button calls logoutUser function
         Button btnLogout = findViewById(R.id.btnLogout);
         btnLogout.setOnClickListener(v -> logoutUser());
+
+        // Button opens change password page
+        Button btnChangePassword = findViewById(R.id.btnChangePassword);
+        btnChangePassword.setOnClickListener(v -> {
+            Intent intent = new Intent(PatientHomeActivity.this, ChangePasswordActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void logoutUser() {
