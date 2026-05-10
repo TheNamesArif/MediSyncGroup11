@@ -75,21 +75,24 @@ android:layout_height="match_parent">
         android:backgroundTint="#248c2d"
         android:text="Create Schedule"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"/>
 
     <Button
         android:id="@+id/btnViewPatients"
         android:backgroundTint="#248c2d"
         android:text="View Patients"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"/>
 
     <Button
         android:id="@+id/btnManageMedicine"
         android:backgroundTint="#248c2d"
         android:text="Manage Medicine"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"/>
 
 </LinearLayout>
 
