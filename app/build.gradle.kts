@@ -50,4 +50,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    // Horizontal date picker
+    implementation("com.github.Mulham-Raee:Horizontal-Calendar:v1.3.2")
 }

@@ -17,6 +17,12 @@ import com.example.medisync.auth.LoginActivity;
 import com.example.medisync.doctor.DoctorHomeActivity;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.Calendar;
+
+import devs.mulham.horizontalcalendar.HorizontalCalendar;
+import devs.mulham.horizontalcalendar.HorizontalCalendarView;
+import devs.mulham.horizontalcalendar.utils.HorizontalCalendarListener;
+
 public class PatientHomeActivity extends AppCompatActivity {
 
     @Override
@@ -39,6 +45,34 @@ public class PatientHomeActivity extends AppCompatActivity {
         btnChangePassword.setOnClickListener(v -> {
             Intent intent = new Intent(PatientHomeActivity.this, ChangePasswordActivity.class);
             startActivity(intent);
+        });
+
+        // Define start and end date range
+        Calendar startDate = Calendar.getInstance();
+        startDate.add(Calendar.MONTH, -1);  // 1 month ago
+
+        Calendar endDate = Calendar.getInstance();
+        endDate.add(Calendar.MONTH, 1);     // 1 month ahead
+
+        // Build the calendar
+        HorizontalCalendar horizontalCalendar = new HorizontalCalendar.Builder(this, R.id.calendarView)
+                .range(startDate, endDate)
+                .datesNumberOnScreen(5)
+                .build();
+
+        horizontalCalendar.setCalendarListener(new HorizontalCalendarListener() {
+            @Override
+            public void onDateSelected(Calendar date, int position) {
+                // Handle selected date
+            }
+
+            @Override
+            public void onCalendarScroll(HorizontalCalendarView calendarView, int dx, int dy) { }
+
+            @Override
+            public boolean onDateLongClicked(Calendar date, int position) {
+                return true;
+            }
         });
     }
 
