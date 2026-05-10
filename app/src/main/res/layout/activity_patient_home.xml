@@ -50,12 +50,12 @@
             <!-- Hamburger Menu Button -->
             <ImageButton
                 android:id="@+id/btnMenu"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_launcher_foreground"
-                android:tint="#FFFFFF"
-                android:contentDescription="Menu" />
+                android:contentDescription="Menu"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_menu_bar_white" />
 
         </LinearLayout>
 
