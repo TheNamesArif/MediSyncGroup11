@@ -44,19 +44,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:layout_gravity="end"
         android:clickable="true"
         android:focusable="true"
-        android:text="Forgot Password? Press Here"
+        android:text="Forget Password?"
         android:textColor="#0000FF"
         android:textSize="14sp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/loginBtn"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="#248c2d"
-        android:text="Login" />
+        android:layout_height="52dp"
+        android:layout_marginTop="8dp"
+        android:text="Login"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#2FA084"
+        app:cornerRadius="14dp"/>
 
     <TextView
         android:id="@+id/registerLink"
@@ -68,6 +73,6 @@
         android:padding="16dp"
         android:text="Don't have an account? Register"
         android:textColor="#0000FF"
-        android:textSize="16sp" />
+        android:textSize="14sp" />
 
 </LinearLayout>

@@ -48,10 +48,17 @@
     <!-- PASSWORD -->
     <EditText
         android:id="@+id/password"
-        android:hint="Password"
+        android:hint="Create password"
         android:inputType="textPassword"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/confirmPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Confirm password"
+        android:inputType="textPassword" />
 
     <!-- GENDER -->
     <TextView
@@ -80,12 +87,17 @@
         android:layout_marginBottom="16dp"/>
 
     <!-- REGISTER BUTTON -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/registerBtn"
-        android:text="Register"
-        android:backgroundTint="#248c2d"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="52dp"
+        android:layout_marginTop="8dp"
+        android:text="Register"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#2FA084"
+        app:cornerRadius="14dp"/>
 
     <!-- LOGIN LINK -->
     <TextView

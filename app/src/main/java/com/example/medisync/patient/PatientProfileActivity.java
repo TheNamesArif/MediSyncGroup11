@@ -2,8 +2,11 @@ package com.example.medisync.patient;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,7 +24,8 @@ import java.util.Map;
 public class PatientProfileActivity extends AppCompatActivity {
 
     EditText nameEdit, emailEdit, ageEdit, genderEdit;
-    Button logoutBtn, updateBtn;
+    TextView displayName, displayEmail;
+    Button logoutBtn, updateBtn, backBtn;
     Button changePasswordBtn;
 
     FirebaseAuth mAuth;
@@ -39,8 +43,12 @@ public class PatientProfileActivity extends AppCompatActivity {
         ageEdit = findViewById(R.id.ageEdit);
         genderEdit = findViewById(R.id.genderEdit);
 
+        displayName = findViewById(R.id.displayName);
+        displayEmail = findViewById(R.id.displayEmail);
+
         logoutBtn = findViewById(R.id.logoutBtn);
         updateBtn = findViewById(R.id.updateBtn);
+        backBtn = findViewById(R.id.backBtn);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -68,6 +76,8 @@ public class PatientProfileActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+
+        backBtn.setOnClickListener(v -> finish());
     }
 
     private void loadProfile(String uid) {
@@ -80,6 +90,9 @@ public class PatientProfileActivity extends AppCompatActivity {
                         emailEdit.setText(documentSnapshot.getString("email"));
                         ageEdit.setText(String.valueOf(documentSnapshot.get("age")));
                         genderEdit.setText(documentSnapshot.getString("gender"));
+
+                        displayName.setText(documentSnapshot.getString("fullName"));
+                        displayEmail.setText(documentSnapshot.getString("email"));
 
                     } else {
                         Toast.makeText(this, "Profile not found", Toast.LENGTH_SHORT).show();
@@ -116,5 +129,7 @@ public class PatientProfileActivity extends AppCompatActivity {
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
                 );
+        // refresh page
+        new Handler(Looper.getMainLooper()).postDelayed(() -> recreate(), 1000);
     }
 }

@@ -1,12 +1,15 @@
 package com.example.medisync.auth;
 
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.medisync.R;
 import com.google.firebase.auth.EmailAuthProvider;
@@ -16,9 +19,13 @@ import com.google.firebase.auth.FirebaseUser;
 public class ChangePasswordActivity extends AppCompatActivity {
 
     EditText email, oldPassword, newPassword, confirmPassword;
-    Button changeBtn;
-
+    ImageView toggleOldPassword, toggleNewPassword, toggleConfirmPassword;
+    Button changeBtn, backBtn;
     FirebaseAuth mAuth;
+
+    boolean isOldPasswordVisible = false;
+    boolean isNewPasswordVisible = false;
+    boolean isConfirmPasswordVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +37,10 @@ public class ChangePasswordActivity extends AppCompatActivity {
         newPassword = findViewById(R.id.new_password);
         confirmPassword = findViewById(R.id.confirm_password);
         changeBtn = findViewById(R.id.change_passwordBtn);
+        toggleOldPassword = findViewById(R.id.toggleOldPassword);
+        toggleNewPassword = findViewById(R.id.toggleNewPassword);
+        toggleConfirmPassword = findViewById(R.id.toggleConfirmPassword);
+        backBtn = findViewById(R.id.backBtn);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -46,7 +57,6 @@ public class ChangePasswordActivity extends AppCompatActivity {
                     TextUtils.isEmpty(oldPass) ||
                     TextUtils.isEmpty(newPass) ||
                     TextUtils.isEmpty(confirmPass)) {
-
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -61,12 +71,10 @@ public class ChangePasswordActivity extends AppCompatActivity {
                 return;
             }
 
-            // STEP 1: Re-authenticate user
             user.reauthenticate(
                     EmailAuthProvider.getCredential(emailStr, oldPass)
             ).addOnSuccessListener(aVoid -> {
 
-                // STEP 2: Update password
                 user.updatePassword(newPass)
                         .addOnSuccessListener(unused ->
                                 Toast.makeText(this,
@@ -80,10 +88,41 @@ public class ChangePasswordActivity extends AppCompatActivity {
                         );
 
             }).addOnFailureListener(e ->
-                    Toast.makeText(this,
-                            "Old password incorrect",
-                            Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Old password incorrect", Toast.LENGTH_LONG).show()
             );
         });
+
+        toggleOldPassword.setOnClickListener(v -> {
+            isOldPasswordVisible = !isOldPasswordVisible;
+            oldPassword.setInputType(isOldPasswordVisible
+                    ? InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                    : InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            oldPassword.setSelection(oldPassword.getText().length());
+            toggleOldPassword.setColorFilter(ContextCompat.getColor(this,
+                    isOldPasswordVisible ? R.color.colorPrimary : R.color.gray));
+        });
+
+        toggleNewPassword.setOnClickListener(v -> {
+            isNewPasswordVisible = !isNewPasswordVisible;
+            newPassword.setInputType(isNewPasswordVisible
+                    ? InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                    : InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            newPassword.setSelection(newPassword.getText().length());
+            toggleNewPassword.setColorFilter(ContextCompat.getColor(this,
+                    isNewPasswordVisible ? R.color.colorPrimary : R.color.gray));
+        });
+
+        toggleConfirmPassword.setOnClickListener(v -> {
+            isConfirmPasswordVisible = !isConfirmPasswordVisible;
+            confirmPassword.setInputType(isConfirmPasswordVisible
+                    ? InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                    : InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            confirmPassword.setSelection(confirmPassword.getText().length());
+            toggleConfirmPassword.setColorFilter(ContextCompat.getColor(this,
+                    isConfirmPasswordVisible ? R.color.colorPrimary : R.color.gray));
+        });
+
+        // Go to previous page
+        backBtn.setOnClickListener(v -> finish());
     }
 }

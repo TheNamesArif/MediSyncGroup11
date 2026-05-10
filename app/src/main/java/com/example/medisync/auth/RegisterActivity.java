@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    EditText fullNameEdit, ageEdit, emailEdit, passwordEdit;
+    EditText fullNameEdit, ageEdit, emailEdit, passwordEdit, confirmPasswordEdit;
     Spinner roleSpinner, genderSpinner;
     Button registerBtn;
     TextView loginLink;
@@ -49,6 +49,7 @@ public class RegisterActivity extends AppCompatActivity {
         ageEdit = findViewById(R.id.age);
         emailEdit = findViewById(R.id.email);
         passwordEdit = findViewById(R.id.password);
+        confirmPasswordEdit = findViewById(R.id.confirmPassword);
 
         roleSpinner = findViewById(R.id.roleSpinner);
         genderSpinner = findViewById(R.id.genderSpinner);
@@ -109,6 +110,19 @@ public class RegisterActivity extends AppCompatActivity {
 
         if (password.length() < 6) {
             passwordEdit.setError("Password must be at least 6 characters");
+            return;
+        }
+
+        // validate confirm password
+        String confirmPassword = confirmPasswordEdit.getText().toString().trim();
+
+        if (TextUtils.isEmpty(confirmPassword)) {
+            confirmPasswordEdit.setError("Please confirm your password");
+            return;
+        }
+
+        if (!password.equals(confirmPassword)) {
+            confirmPasswordEdit.setError("Passwords do not match");
             return;
         }
 
