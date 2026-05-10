@@ -3,7 +3,7 @@ package com.example.medisync.patient;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,10 +14,13 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PatientProfileActivity extends AppCompatActivity {
 
-    TextView nameText, emailText, ageText, genderText;
-    Button logoutBtn;
+    EditText nameEdit, emailEdit, ageEdit, genderEdit;
+    Button logoutBtn, updateBtn;
 
     FirebaseAuth mAuth;
     FirebaseFirestore db;
@@ -27,20 +30,24 @@ public class PatientProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_patient_profile);
 
-        nameText = findViewById(R.id.nameText);
-        emailText = findViewById(R.id.emailText);
-        ageText = findViewById(R.id.ageText);
-        genderText = findViewById(R.id.genderText);
+        nameEdit = findViewById(R.id.nameEdit);
+        emailEdit = findViewById(R.id.emailEdit);
+        ageEdit = findViewById(R.id.ageEdit);
+        genderEdit = findViewById(R.id.genderEdit);
+
         logoutBtn = findViewById(R.id.logoutBtn);
+        updateBtn = findViewById(R.id.updateBtn);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
         FirebaseUser user = mAuth.getCurrentUser();
+
         if (user != null) {
             loadProfile(user.getUid());
+
+            updateBtn.setOnClickListener(v -> updateProfile(user.getUid()));
         } else {
-            // If no user, send back to login
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         }
@@ -59,22 +66,46 @@ public class PatientProfileActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // Use getString with a fallback to "Not set" if null
-                        String name = documentSnapshot.getString("fullName");
-                        String email = documentSnapshot.getString("email");
-                        Object age = documentSnapshot.get("age");
-                        String gender = documentSnapshot.getString("gender");
 
-                        nameText.setText(name != null ? name : "Name not set");
-                        emailText.setText(email != null ? email : "Email not set");
-                        ageText.setText(age != null ? String.valueOf(age) : "Age not set");
-                        genderText.setText(gender != null ? gender : "Gender not set");
+                        nameEdit.setText(documentSnapshot.getString("fullName"));
+                        emailEdit.setText(documentSnapshot.getString("email"));
+                        ageEdit.setText(String.valueOf(documentSnapshot.get("age")));
+                        genderEdit.setText(documentSnapshot.getString("gender"));
+
                     } else {
-                        Toast.makeText(this, "Profile data not found", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Profile not found", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                );
+    }
+
+    private void updateProfile(String uid) {
+
+        String name = nameEdit.getText().toString().trim();
+        String email = emailEdit.getText().toString().trim();
+        String age = ageEdit.getText().toString().trim();
+        String gender = genderEdit.getText().toString().trim();
+
+        if (name.isEmpty() || email.isEmpty()) {
+            Toast.makeText(this, "Name and Email cannot be empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("fullName", name);
+        updates.put("email", email);
+        updates.put("age", age);
+        updates.put("gender", gender);
+
+        db.collection("users").document(uid)
+                .update(updates)
+                .addOnSuccessListener(aVoid ->
+                        Toast.makeText(this, "Profile updated successfully", Toast.LENGTH_SHORT).show()
+                )
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
                 );
     }
 }

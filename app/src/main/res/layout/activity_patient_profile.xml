@@ -13,64 +13,81 @@
         android:textStyle="bold"
         android:layout_marginBottom="20dp"/>
 
-    <TextView 
+    <!-- Full Name -->
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Full Name" 
-        android:textStyle="bold" 
-        android:layout_marginTop="8dp"/>
-    <TextView
-        android:id="@+id/nameText"
+        android:text="Full Name"
+        android:textStyle="bold"/>
+
+    <EditText
+        android:id="@+id/nameEdit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:hint="Loading..."/>
+        android:hint="Enter full name"/>
 
-    <TextView 
+    <!-- Email -->
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Email" 
-        android:textStyle="bold" 
+        android:text="Email"
+        android:textStyle="bold"
         android:layout_marginTop="8dp"/>
-    <TextView
-        android:id="@+id/emailText"
+
+    <EditText
+        android:id="@+id/emailEdit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:hint="Loading..."/>
+        android:hint="Enter email"/>
 
-    <TextView 
+    <!-- Age -->
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Age" 
-        android:textStyle="bold" 
+        android:text="Age"
+        android:textStyle="bold"
         android:layout_marginTop="8dp"/>
-    <TextView
-        android:id="@+id/ageText"
+
+    <EditText
+        android:id="@+id/ageEdit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:hint="Loading..."/>
+        android:hint="Enter age"
+        android:inputType="number"/>
 
-    <TextView 
+    <!-- Gender -->
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Gender" 
-        android:textStyle="bold" 
+        android:text="Gender"
+        android:textStyle="bold"
         android:layout_marginTop="8dp"/>
-    <TextView
-        android:id="@+id/genderText"
+
+    <EditText
+        android:id="@+id/genderEdit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:hint="Loading..."/>
+        android:hint="Enter gender"/>
 
+    <!-- Update Button -->
+    <Button
+        android:id="@+id/updateBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Update Profile"
+        android:layout_marginTop="24dp"/>
+
+    <!-- Logout Button -->
     <Button
         android:id="@+id/logoutBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
         android:text="Logout"
+        android:layout_marginTop="12dp"
         android:backgroundTint="#FF0000"/>
 
 </LinearLayout>
