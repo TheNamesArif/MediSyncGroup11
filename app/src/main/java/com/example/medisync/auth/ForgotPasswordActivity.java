@@ -15,7 +15,7 @@ import com.google.firebase.auth.FirebaseAuth;
 public class ForgotPasswordActivity extends AppCompatActivity {
 
     EditText emailEdit;
-    Button resetBtn;
+    Button resetBtn, backBtn;
     FirebaseAuth mAuth;
 
     @Override
@@ -25,10 +25,12 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
         emailEdit = findViewById(R.id.email);
         resetBtn = findViewById(R.id.resetBtn);
+        backBtn = findViewById(R.id.backBtn);
 
         mAuth = FirebaseAuth.getInstance();
 
         resetBtn.setOnClickListener(v -> resetPassword());
+        backBtn.setOnClickListener(v -> finish());
     }
 
     private void resetPassword() {
