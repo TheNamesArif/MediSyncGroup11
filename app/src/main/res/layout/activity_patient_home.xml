@@ -15,10 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#2E7D32"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp"
+            android:padding="20dp"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
@@ -30,7 +27,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:text="MediSync - Smart Medicine Reminder"
+                    android:text="MediSync"
                     android:textSize="14sp"
                     android:textColor="#A5D6A7"
                     android:layout_width="wrap_content"
@@ -54,7 +51,8 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Menu"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_menu_bar_white" />
+                android:src="@android:drawable/ic_menu_sort_by_size"
+                android:tint="#FFFFFF" />
 
         </LinearLayout>
 

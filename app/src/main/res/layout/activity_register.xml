@@ -11,7 +11,7 @@
     <ImageView
         android:id="@+id/imageView2"
         android:layout_width="match_parent"
-        android:layout_height="172dp"
+        android:layout_height="150dp"
         app:srcCompat="@mipmap/ic_launcher_foreground" />
 
     <TextView
@@ -22,6 +22,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
+    <!-- FULL NAME -->
+    <EditText
+        android:id="@+id/fullName"
+        android:hint="Full Name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <!-- AGE -->
+    <EditText
+        android:id="@+id/age"
+        android:hint="Age"
+        android:inputType="number"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <!-- EMAIL -->
     <EditText
         android:id="@+id/email"
         android:hint="Email"
@@ -29,6 +45,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <!-- PASSWORD -->
     <EditText
         android:id="@+id/password"
         android:hint="Password"
@@ -36,6 +53,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <!-- GENDER -->
+    <TextView
+        android:text="Select Gender:"
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Spinner
+        android:id="@+id/genderSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"/>
+
+    <!-- ROLE -->
     <TextView
         android:text="Select Role:"
         android:layout_marginTop="10dp"
@@ -48,6 +79,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"/>
 
+    <!-- REGISTER BUTTON -->
     <Button
         android:id="@+id/registerBtn"
         android:text="Register"
@@ -55,6 +87,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <!-- LOGIN LINK -->
     <TextView
         android:id="@+id/loginLink"
         android:text="Already have an account? Login"

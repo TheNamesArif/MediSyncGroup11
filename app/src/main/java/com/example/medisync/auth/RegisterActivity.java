@@ -27,10 +27,11 @@ import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    EditText emailEdit, passwordEdit;
-    Spinner roleSpinner;
+    EditText fullNameEdit, ageEdit, emailEdit, passwordEdit;
+    Spinner roleSpinner, genderSpinner;
     Button registerBtn;
     TextView loginLink;
+
     FirebaseAuth mAuth;
     FirebaseFirestore db;
 
@@ -39,33 +40,57 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        // Initialize Firebase
+        // Firebase
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        // Initialize UI
+        // UI
+        fullNameEdit = findViewById(R.id.fullName);
+        ageEdit = findViewById(R.id.age);
         emailEdit = findViewById(R.id.email);
         passwordEdit = findViewById(R.id.password);
+
         roleSpinner = findViewById(R.id.roleSpinner);
+        genderSpinner = findViewById(R.id.genderSpinner);
+
         registerBtn = findViewById(R.id.registerBtn);
         loginLink = findViewById(R.id.loginLink);
 
-        // Setup Spinner
+        // Role spinner
         String[] roles = {"Patient", "Doctor"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, roles);
-        roleSpinner.setAdapter(adapter);
+        ArrayAdapter<String> roleAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item, roles);
+        roleSpinner.setAdapter(roleAdapter);
 
-        // Handle Registration
+        // Gender spinner
+        String[] genders = {"Male", "Female"};
+        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item, genders);
+        genderSpinner.setAdapter(genderAdapter);
+
         registerBtn.setOnClickListener(v -> registerUser());
-
-        // Link back to Login
         loginLink.setOnClickListener(v -> finish());
     }
 
     private void registerUser() {
+
+        String fullName = fullNameEdit.getText().toString().trim();
+        String age = ageEdit.getText().toString().trim();
         String email = emailEdit.getText().toString().trim();
         String password = passwordEdit.getText().toString().trim();
         String role = roleSpinner.getSelectedItem().toString();
+        String gender = genderSpinner.getSelectedItem().toString();
+
+        // Validation
+        if (TextUtils.isEmpty(fullName)) {
+            fullNameEdit.setError("Full name is required");
+            return;
+        }
+
+        if (TextUtils.isEmpty(age)) {
+            ageEdit.setError("Age is required");
+            return;
+        }
 
         if (TextUtils.isEmpty(email)) {
             emailEdit.setError("Email is required");
@@ -73,7 +98,7 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailEdit.setError("Enter a valid email");
+            emailEdit.setError("Enter valid email");
             return;
         }
 
@@ -91,36 +116,41 @@ public class RegisterActivity extends AppCompatActivity {
 
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnSuccessListener(authResult -> {
+
                     String uid = authResult.getUser().getUid();
-                    
-                    // Save user info to Firestore
+
                     Map<String, Object> user = new HashMap<>();
+                    user.put("uid", uid);
                     user.put("email", email);
                     user.put("role", role);
-                    user.put("uid", uid);
+                    user.put("fullName", fullName);
+                    user.put("age", age);
+                    user.put("gender", gender);
 
                     db.collection("users").document(uid)
                             .set(user)
                             .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(RegisterActivity.this, "Welcome to MediSync!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Welcome to MediSync!", Toast.LENGTH_SHORT).show();
                                 navigateToHome(role);
                             })
                             .addOnFailureListener(e -> {
-                                Toast.makeText(RegisterActivity.this, "Database Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(this, "Firestore Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                                 registerBtn.setEnabled(true);
                             });
                 })
                 .addOnFailureListener(e -> {
                     String errorMsg;
+
                     if (e instanceof FirebaseAuthUserCollisionException) {
                         errorMsg = "Email already registered.";
                     } else if (e instanceof FirebaseAuthWeakPasswordException) {
-                        errorMsg = "Password is too weak.";
+                        errorMsg = "Weak password.";
                     } else if (e instanceof FirebaseAuthInvalidCredentialsException) {
-                        errorMsg = "Invalid email format.";
+                        errorMsg = "Invalid email.";
                     } else {
-                        errorMsg = "Error: " + e.getMessage();
+                        errorMsg = e.getMessage();
                     }
+
                     Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
                     registerBtn.setEnabled(true);
                 });
@@ -128,12 +158,13 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void navigateToHome(String role) {
         Intent intent;
+
         if ("Patient".equals(role)) {
             intent = new Intent(this, PatientHomeActivity.class);
         } else {
             intent = new Intent(this, DoctorHomeActivity.class);
         }
-        // FLAG_ACTIVITY_CLEAR_TASK prevents the user from going back to registration via the back button
+
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
