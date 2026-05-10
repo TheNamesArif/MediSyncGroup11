@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.medisync.R;
+import com.example.medisync.auth.ChangePasswordActivity;
 import com.example.medisync.auth.LoginActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -21,6 +22,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     EditText nameEdit, emailEdit, ageEdit, genderEdit;
     Button logoutBtn, updateBtn;
+    Button changePasswordBtn;
 
     FirebaseAuth mAuth;
     FirebaseFirestore db;
@@ -29,6 +31,8 @@ public class PatientProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_patient_profile);
+
+        changePasswordBtn = findViewById(R.id.changePasswordBtn);
 
         nameEdit = findViewById(R.id.nameEdit);
         emailEdit = findViewById(R.id.emailEdit);
@@ -42,6 +46,11 @@ public class PatientProfileActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         FirebaseUser user = mAuth.getCurrentUser();
+
+        changePasswordBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(PatientProfileActivity.this, ChangePasswordActivity.class);
+            startActivity(intent);
+        });
 
         if (user != null) {
             loadProfile(user.getUid());
