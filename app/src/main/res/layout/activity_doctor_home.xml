@@ -1,99 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-android:layout_width="match_parent"
-android:layout_height="match_parent">
-
-<LinearLayout
-    android:id="@+id/main"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <!-- Header -->
     <LinearLayout
+        android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#3B7597"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="20dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="vertical">
 
-        <!-- Title -->
+        <!-- Header -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:background="#3B7597"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <TextView
-                android:text="MediSync - Smart Medicine Reminder"
-                android:textSize="14sp"
-                android:textColor="#A5D6A7"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <TextView
-                android:text="Doctor Dashboard"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                <TextView
+                    android:text="MediSync - Smart Medicine Reminder"
+                    android:textSize="14sp"
+                    android:textColor="#A5D6A7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:text="Doctor Dashboard"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/imgBtnMenu"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Menu"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_menu_bar_white" />
 
         </LinearLayout>
 
-        <!-- Hamburger Menu Button -->
-        <ImageButton
-            android:id="@+id/imgBtnMenu"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Menu"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_menu_bar_white" />
+        <!-- Calendar -->
+        <devs.mulham.horizontalcalendar.HorizontalCalendarView
+            android:id="@+id/calendarView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#3B7597"
+            android:paddingTop="8dp"
+            android:paddingBottom="12dp"
+            app:textColorNormal="#C8E6C9"
+            app:textColorSelected="#FFFFFF"
+            app:selectorColor="#FFFFFF" />
+
+        <!-- Action Buttons Section -->
+        <TextView
+            android:text="Choose Action"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#124170"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Row 1: Create Schedule + View Patients -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:weightSum="2">
+
+            <!-- Create Schedule Button -->
+            <LinearLayout
+                android:id="@+id/btnCreateSchedule"
+                android:layout_width="0dp"
+                android:layout_height="130dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/bg_card_blue"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:text="Manage Schedule"
+                    android:textSize="13sp"
+                    android:textColor="#FFFFFF"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+            <!-- View Patients Button -->
+            <LinearLayout
+                android:id="@+id/btnViewPatients"
+                android:layout_width="0dp"
+                android:layout_height="130dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/bg_card_green"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:text="View Patient Details"
+                    android:textSize="13sp"
+                    android:textColor="#FFFFFF"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Row 2: Manage Medicine + View Schedule History -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="20dp"
+            android:weightSum="2"/>
 
     </LinearLayout>
-
-    <!-- Calendar -->
-    <devs.mulham.horizontalcalendar.HorizontalCalendarView
-        android:id="@+id/calendarView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#3B7597"
-        android:paddingTop="8dp"
-        android:paddingBottom="12dp"
-        app:textColorNormal="#C8E6C9"
-        app:textColorSelected="#FFFFFF"
-        app:selectorColor="#FFFFFF" />
-
-    <Button
-        android:id="@+id/btnCreateSchedule"
-        android:backgroundTint="#3B7597"
-        android:text="Create Schedule"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"/>
-
-    <Button
-        android:id="@+id/btnViewPatients"
-        android:backgroundTint="#3B7597"
-        android:text="View Patients"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"/>
-
-    <Button
-        android:id="@+id/btnManageMedicine"
-        android:backgroundTint="#3B7597"
-        android:text="Manage Medicine"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"/>
-
-</LinearLayout>
 
 </ScrollView>
