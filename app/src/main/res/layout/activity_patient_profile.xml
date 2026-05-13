@@ -15,7 +15,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- ── Header banner ── -->
+            <!-- Header banner -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="121dp"
@@ -33,10 +33,10 @@
                         android:layout_width="40dp"
                         android:layout_height="30dp"
                         android:layout_gravity="start"
-                        android:backgroundTint="#218a70"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
                         android:layout_marginRight="10dp"
+                        android:backgroundTint="#218a70"
+                        android:insetBottom="0dp"
+                        android:insetTop="0dp"
                         app:cornerRadius="12dp"
                         app:icon="@drawable/ic_back_arrow_white"
                         app:iconGravity="textStart"
@@ -56,49 +56,49 @@
 
             </FrameLayout>
 
-            <!-- ── Avatar card (overlaps header) ── -->
+            <!-- Avatar card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginTop="-48dp"
+                android:layout_marginEnd="16dp"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFFFFF">
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:padding="16dp">
 
                     <!-- Name & email -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
                         android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="14dp">
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/displayName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="John Doe"
+                            android:textColor="#1A1A1A"
                             android:textSize="17sp"
-                            android:textStyle="bold"
-                            android:textColor="#1A1A1A"/>
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/displayEmail"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
                             android:text="john.doe@email.com"
-                            android:textSize="13sp"
                             android:textColor="#888888"
-                            android:layout_marginTop="2dp"/>
+                            android:textSize="13sp" />
 
                     </LinearLayout>
 
@@ -106,28 +106,28 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- ── Info fields card ── -->
+            <!-- Info fields card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginTop="12dp"
+                android:layout_marginEnd="16dp"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="14dp"
-                app:cardElevation="1dp"
-                app:cardBackgroundColor="#FFFFFF">
+                app:cardElevation="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <!-- Full Name row -->
+                    <!-- Full Name -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:gravity="center_vertical"
+                        android:orientation="horizontal"
                         android:padding="14dp">
 
                         <LinearLayout
@@ -139,22 +139,20 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:letterSpacing="0.06"
                                 android:text="FULL NAME"
-                                android:textSize="10sp"
                                 android:textColor="#AAAAAA"
-                                android:letterSpacing="0.06"
-                                android:textStyle="bold"/>
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
 
-                            <EditText
-                                android:id="@+id/nameEdit"
+                            <TextView
+                                android:id="@+id/nameText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textSize="15sp"
+                                android:layout_marginTop="2dp"
+                                android:text="John Doe"
                                 android:textColor="#1A1A1A"
-                                android:hint="Enter full name"
-                                android:background="@null"
-                                android:padding="0dp"
-                                android:layout_marginTop="2dp"/>
+                                android:textSize="15sp" />
 
                         </LinearLayout>
 
@@ -164,14 +162,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="0.5dp"
                         android:layout_marginStart="60dp"
-                        android:background="#F0F0F0"/>
+                        android:background="#F0F0F0" />
 
-                    <!-- Email row -->
+                    <!-- Email -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:gravity="center_vertical"
+                        android:orientation="horizontal"
                         android:padding="14dp">
 
                         <LinearLayout
@@ -183,23 +181,20 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:letterSpacing="0.06"
                                 android:text="EMAIL"
-                                android:textSize="10sp"
                                 android:textColor="#AAAAAA"
-                                android:letterSpacing="0.06"
-                                android:textStyle="bold"/>
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
 
-                            <EditText
-                                android:id="@+id/emailEdit"
+                            <TextView
+                                android:id="@+id/emailText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textSize="15sp"
+                                android:layout_marginTop="2dp"
+                                android:text="john@email.com"
                                 android:textColor="#1A1A1A"
-                                android:hint="Enter email"
-                                android:background="@null"
-                                android:padding="0dp"
-                                android:inputType="textEmailAddress"
-                                android:layout_marginTop="2dp"/>
+                                android:textSize="15sp" />
 
                         </LinearLayout>
 
@@ -209,14 +204,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="0.5dp"
                         android:layout_marginStart="60dp"
-                        android:background="#F0F0F0"/>
+                        android:background="#F0F0F0" />
 
-                    <!-- Age row -->
+                    <!-- Age -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:gravity="center_vertical"
+                        android:orientation="horizontal"
                         android:padding="14dp">
 
                         <LinearLayout
@@ -228,23 +223,20 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:letterSpacing="0.06"
                                 android:text="AGE"
-                                android:textSize="10sp"
                                 android:textColor="#AAAAAA"
-                                android:letterSpacing="0.06"
-                                android:textStyle="bold"/>
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
 
-                            <EditText
-                                android:id="@+id/ageEdit"
+                            <TextView
+                                android:id="@+id/ageText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textSize="15sp"
+                                android:layout_marginTop="2dp"
+                                android:text="21"
                                 android:textColor="#1A1A1A"
-                                android:hint="Enter age"
-                                android:background="@null"
-                                android:padding="0dp"
-                                android:inputType="number"
-                                android:layout_marginTop="2dp"/>
+                                android:textSize="15sp" />
 
                         </LinearLayout>
 
@@ -254,14 +246,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="0.5dp"
                         android:layout_marginStart="60dp"
-                        android:background="#F0F0F0"/>
+                        android:background="#F0F0F0" />
 
-                    <!-- Gender row -->
+                    <!-- Gender -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:gravity="center_vertical"
+                        android:orientation="horizontal"
                         android:padding="14dp">
 
                         <LinearLayout
@@ -273,22 +265,20 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="GENDER"
-                                android:textSize="10sp"
-                                android:textColor="#AAAAAA"
                                 android:letterSpacing="0.06"
-                                android:textStyle="bold"/>
+                                android:text="GENDER"
+                                android:textColor="#AAAAAA"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
 
-                            <EditText
-                                android:id="@+id/genderEdit"
+                            <TextView
+                                android:id="@+id/genderText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textSize="15sp"
+                                android:layout_marginTop="2dp"
+                                android:text="Male"
                                 android:textColor="#1A1A1A"
-                                android:hint="Enter gender"
-                                android:background="@null"
-                                android:padding="0dp"
-                                android:layout_marginTop="2dp"/>
+                                android:textSize="15sp" />
 
                         </LinearLayout>
 
@@ -298,62 +288,61 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- ── Action buttons ── -->
+            <!-- Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginTop="12dp"
-                android:layout_marginBottom="24dp">
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="24dp"
+                android:orientation="vertical">
 
                 <!-- Update Profile -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/updateBtn"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
+                    android:backgroundTint="#2FA084"
                     android:text="Update Profile"
+                    android:textColor="#FFFFFF"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:backgroundTint="#2FA084"
-                    android:textColor="#FFFFFF"
                     app:cornerRadius="14dp"
-                    app:iconGravity="textStart"/>
+                    app:iconGravity="textStart" />
 
                 <!-- Change Password -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/changePasswordBtn"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
+                    android:layout_marginTop="10dp"
                     android:text="Change Password"
+                    android:textAllCaps="false"
+                    android:textColor="#2FA084"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:layout_marginTop="10dp"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:textColor="#2FA084"
-                    android:textAllCaps="false"
-                    app:strokeColor="#2FA084"
-                    app:strokeWidth="1.5dp"
                     app:cornerRadius="14dp"
                     app:iconGravity="textStart"
-                    app:iconTint="#2FA084"/>
+                    app:iconTint="#2FA084"
+                    app:strokeColor="#2FA084"
+                    app:strokeWidth="1.5dp" />
 
                 <!-- Logout -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/logoutBtn"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
-                    android:layout_marginVertical="50dp"
+                    android:layout_marginTop="50dp"
+                    android:backgroundTint="#BF092F"
                     android:text="Log out"
+                    android:textColor="#FFFFFF"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:layout_marginTop="10dp"
-                    android:backgroundTint="#BF092F"
-                    android:textColor="#FFFFFF"
                     app:cornerRadius="14dp"
                     app:iconGravity="textStart"
-                    app:iconTint="#E24B4A"/>
+                    app:iconTint="#E24B4A" />
 
             </LinearLayout>
 

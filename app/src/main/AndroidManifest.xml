@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -13,34 +13,57 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Medisync">
-
-        <!-- Patient Activities -->
-        <activity android:name=".patient.TakenStatusActivity" android:exported="false" />
-        <activity android:name=".patient.MedicineScheduleActivity" android:exported="false" />
-        <activity android:name=".patient.PatientProfileActivity" android:exported="false" />
-        <activity android:name=".patient.PatientHomeActivity" android:exported="false" />
-
-        <!-- Doctor Activities -->
-        <activity android:name=".doctor.PatientDetailActivity" android:exported="false" />
-        <activity android:name=".doctor.ManageScheduleActivity" android:exported="false" />
-        <activity android:name=".doctor.DoctorProfileActivity" android:exported="false" />
-        <activity android:name=".doctor.DoctorHomeActivity" android:exported="false" />
-
-        <!-- Auth Activities -->
-        <activity android:name=".auth.ForgotPasswordActivity" android:exported="false" />
-        <activity android:name=".auth.RegisterActivity" android:exported="false" />
-        <activity android:name=".auth.LoginActivity" android:exported="false" />
-        <activity android:name=".auth.ChangePasswordActivity" android:exported="false" />
-
-        <!-- Splash (Launcher) -->
+        <activity
+            android:name=".doctor.EditDoctorProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".patient.EditPatientProfileActivity"
+            android:exported="false" /> <!-- Patient Activities -->
+        <activity
+            android:name=".patient.TakenStatusActivity"
+            android:exported="false" />
+        <activity
+            android:name=".patient.MedicineScheduleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".patient.PatientProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".patient.PatientHomeActivity"
+            android:exported="false" /> <!-- Doctor Activities -->
+        <activity
+            android:name=".doctor.PatientDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".doctor.ManageScheduleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".doctor.DoctorProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".doctor.DoctorHomeActivity"
+            android:exported="false" /> <!-- Auth Activities -->
+        <activity
+            android:name=".auth.ForgotPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".auth.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".auth.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".auth.ChangePasswordActivity"
+            android:exported="false" /> <!-- Splash (Launcher) -->
         <activity
             android:name=".auth.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
+
 </manifest>
