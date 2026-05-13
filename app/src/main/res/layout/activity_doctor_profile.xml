@@ -41,7 +41,7 @@
                         app:iconPadding="0dp"/>
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Profile"
                         android:textColor="#FFFFFF"
@@ -79,7 +79,7 @@
                         android:id="@+id/displayEmail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="john@email.com"
+                        android:text="email@example.com"
                         android:textSize="13sp"
                         android:textColor="#888888"
                         android:layout_marginTop="4dp"/>
@@ -113,7 +113,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="FULL NAME"
+                            android:text="Full Name"
                             android:textSize="10sp"
                             android:textColor="#AAAAAA"
                             android:textStyle="bold"/>
@@ -142,7 +142,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="EMAIL"
+                            android:text="Email"
                             android:textSize="10sp"
                             android:textColor="#AAAAAA"
                             android:textStyle="bold"/>
@@ -171,7 +171,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="AGE"
+                            android:text="Age"
                             android:textSize="10sp"
                             android:textColor="#AAAAAA"
                             android:textStyle="bold"/>
@@ -200,7 +200,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="GENDER"
+                            android:text="Gender"
                             android:textSize="10sp"
                             android:textColor="#AAAAAA"
                             android:textStyle="bold"/>
@@ -232,7 +232,9 @@
                     android:text="Update Profile"
                     android:textColor="#FFFFFF"
                     android:backgroundTint="#3B7597"
-                    app:cornerRadius="14dp"/>
+                    android:textAllCaps="false"
+                    app:cornerRadius="14dp"
+                    android:textStyle="bold"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/changePasswordBtn"
@@ -241,19 +243,23 @@
                     android:text="Change Password"
                     android:textColor="#3B7597"
                     android:layout_marginTop="10dp"
+                    android:textAllCaps="false"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     app:strokeColor="#3B7597"
-                    app:cornerRadius="14dp"/>
+                    app:cornerRadius="14dp"
+                    android:textStyle="bold"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/logoutBtn"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
-                    android:text="Log out"
+                    android:text="Log Out"
                     android:textColor="#FFFFFF"
                     android:backgroundTint="#BF092F"
-                    android:layout_marginTop="10dp"
-                    app:cornerRadius="14dp"/>
+                    android:layout_marginTop="40dp"
+                    android:textAllCaps="false"
+                    app:cornerRadius="14dp"
+                    android:textStyle="bold"/>
 
             </LinearLayout>
 
