@@ -28,6 +28,21 @@
                     android:orientation="horizontal"
                     android:padding="20dp">
 
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/backBtn"
+                        android:layout_width="40dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="start"
+                        android:backgroundTint="#1d5373"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:layout_marginRight="10dp"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_back_arrow_white"
+                        app:iconGravity="textStart"
+                        app:iconPadding="0dp"
+                        app:iconSize="20dp" />
+
                     <TextView
                         android:layout_width="183dp"
                         android:layout_height="wrap_content"
@@ -36,15 +51,6 @@
                         android:textColor="#FFFFFF"
                         android:textSize="22sp"
                         android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/backBtn"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:backgroundTint="#1d5373"
-                        android:textColor="#FFFFFF"
-                        android:text="Back" />
 
                 </LinearLayout>
 
@@ -326,6 +332,7 @@
                     android:layout_marginTop="10dp"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:textColor="#3B7597"
+                    android:textAllCaps="false"
                     app:strokeColor="#3B7597"
                     app:strokeWidth="1.5dp"
                     app:cornerRadius="14dp"

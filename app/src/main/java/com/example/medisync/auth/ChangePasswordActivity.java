@@ -46,6 +46,10 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
         FirebaseUser user = mAuth.getCurrentUser();
 
+        //Autofill email section
+        String emailAutofill = user.getEmail();
+        email.setText(emailAutofill);
+
         changeBtn.setOnClickListener(v -> {
 
             String emailStr = email.getText().toString().trim();

@@ -2,16 +2,19 @@ package com.example.medisync.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.medisync.R;
 import com.example.medisync.doctor.DoctorHomeActivity;
@@ -28,12 +31,16 @@ import java.util.Map;
 public class RegisterActivity extends AppCompatActivity {
 
     EditText fullNameEdit, ageEdit, emailEdit, passwordEdit, confirmPasswordEdit;
+    ImageView toggleCreatePassword, toggleConfirmPassword;
     Spinner roleSpinner, genderSpinner;
-    Button registerBtn;
+    Button registerBtn, backBtn;
     TextView loginLink;
 
     FirebaseAuth mAuth;
     FirebaseFirestore db;
+
+    boolean isCreatePasswordVisible = false;
+    boolean isConfirmPasswordVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +57,9 @@ public class RegisterActivity extends AppCompatActivity {
         emailEdit = findViewById(R.id.email);
         passwordEdit = findViewById(R.id.password);
         confirmPasswordEdit = findViewById(R.id.confirmPassword);
+        toggleCreatePassword = findViewById(R.id.toggleCreatePassword);
+        toggleConfirmPassword = findViewById(R.id.toggleConfirmPassword);
+        backBtn = findViewById(R.id.backBtn);
 
         roleSpinner = findViewById(R.id.roleSpinner);
         genderSpinner = findViewById(R.id.genderSpinner);
@@ -71,6 +81,29 @@ public class RegisterActivity extends AppCompatActivity {
 
         registerBtn.setOnClickListener(v -> registerUser());
         loginLink.setOnClickListener(v -> finish());
+
+        toggleCreatePassword.setOnClickListener(v -> {
+            isCreatePasswordVisible = !isCreatePasswordVisible;
+            passwordEdit.setInputType(isCreatePasswordVisible
+                    ? InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                    : InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            passwordEdit.setSelection(passwordEdit.getText().length());
+            toggleCreatePassword.setColorFilter(ContextCompat.getColor(this,
+                    isCreatePasswordVisible ? R.color.colorPrimary : R.color.gray));
+        });
+
+        toggleConfirmPassword.setOnClickListener(v -> {
+            isConfirmPasswordVisible = !isConfirmPasswordVisible;
+            confirmPasswordEdit.setInputType(isConfirmPasswordVisible
+                    ? InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                    : InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            confirmPasswordEdit.setSelection(confirmPasswordEdit.getText().length());
+            toggleConfirmPassword.setColorFilter(ContextCompat.getColor(this,
+                    isConfirmPasswordVisible ? R.color.colorPrimary : R.color.gray));
+        });
+
+        // Go to previous page
+        backBtn.setOnClickListener(v -> finish());
     }
 
     private void registerUser() {
