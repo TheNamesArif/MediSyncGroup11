@@ -86,16 +86,16 @@ public class DoctorProfileActivity extends AppCompatActivity {
                         Object ageObj = doc.get("age");
                         String gender = doc.getString("gender");
 
-                        // Apply values with null-safety checks to prevent "null" string display
-                        nameText.setText(name != null ? name : "Not set");
-                        emailText.setText(email != null ? email : "Not set");
-                        ageText.setText(ageObj != null ? String.valueOf(ageObj) : "Not set");
-                        genderText.setText(gender != null ? gender : "Not set");
+                        // Apply values with Title Case fallbacks
+                        nameText.setText(name != null ? name : "Name Not Set");
+                        emailText.setText(email != null ? email : "Email Not Set");
+                        ageText.setText(ageObj != null ? String.valueOf(ageObj) : "Age Not Set");
+                        genderText.setText(gender != null ? gender : "Gender Not Set");
 
-                        displayName.setText(name != null ? name : "Doctor");
+                        displayName.setText(name != null ? name : "Doctor Profile");
                         displayEmail.setText(email != null ? email : "");
                     } else {
-                        Toast.makeText(this, "Profile not found", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Profile Not Found", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> 

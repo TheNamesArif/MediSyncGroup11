@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Medisync">
         <activity
+            android:name=".doctor.ViewScheduleHistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".doctor.EditDoctorProfileActivity"
             android:exported="false" />
         <activity

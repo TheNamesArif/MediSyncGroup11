@@ -67,6 +67,20 @@ public class DoctorHomeActivity extends AppCompatActivity {
         // Menu button
         ImageButton imgBtnMenu = findViewById(R.id.imgBtnMenu);
         imgBtnMenu.setOnClickListener(v -> showDropdownMenu(v));
+
+        // Manage Schedule button
+        View btnCreateSchedule = findViewById(R.id.btnCreateSchedule);
+        btnCreateSchedule.setOnClickListener(v -> {
+            Intent intent = new Intent(DoctorHomeActivity.this, ManageScheduleActivity.class);
+            startActivity(intent);
+        });
+
+        // View Schedule History button
+        View btnViewScheduleHistory = findViewById(R.id.btnViewPatients);
+        btnViewScheduleHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(DoctorHomeActivity.this, ViewScheduleHistoryActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void showDropdownMenu(View anchor) {

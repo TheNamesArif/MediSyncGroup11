@@ -78,17 +78,12 @@ public class PatientProfileActivity extends AppCompatActivity {
 
         // Logout
         logoutBtn.setOnClickListener(v -> {
-
             mAuth.signOut();
-
             Intent intent = new Intent(
                     PatientProfileActivity.this,
                     LoginActivity.class
             );
-
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
         });
@@ -100,53 +95,36 @@ public class PatientProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         FirebaseUser user = mAuth.getCurrentUser();
-
         if (user != null) {
             loadProfile(user.getUid());
         }
     }
 
     private void loadProfile(String uid) {
-
         db.collection("users").document(uid)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
-
                     if (documentSnapshot.exists()) {
-
                         String name = documentSnapshot.getString("fullName");
                         String email = documentSnapshot.getString("email");
-                        String age = String.valueOf(documentSnapshot.get("age"));
+                        Object ageObj = documentSnapshot.get("age");
                         String gender = documentSnapshot.getString("gender");
 
-                        // Set info card
-                        nameText.setText(name);
-                        emailText.setText(email);
-                        ageText.setText(age);
-                        genderText.setText(gender);
+                        // Apply values with Title Case fallbacks
+                        nameText.setText(name != null ? name : "Name Not Set");
+                        emailText.setText(email != null ? email : "Email Not Set");
+                        ageText.setText(ageObj != null ? String.valueOf(ageObj) : "Age Not Set");
+                        genderText.setText(gender != null ? gender : "Gender Not Set");
 
-                        // Set top profile card
-                        displayName.setText(name);
-                        displayEmail.setText(email);
-
+                        displayName.setText(name != null ? name : "User Profile");
+                        displayEmail.setText(email != null ? email : "");
                     } else {
-
-                        Toast.makeText(
-                                this,
-                                "Profile not found",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                        Toast.makeText(this, "Profile Not Found", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e ->
-
-                        Toast.makeText(
-                                this,
-                                "Error: " + e.getMessage(),
-                                Toast.LENGTH_LONG
-                        ).show()
+                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show()
                 );
     }
 }

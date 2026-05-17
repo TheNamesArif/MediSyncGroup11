@@ -83,7 +83,7 @@
                         android:id="@+id/nameEdit"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter full name"
+                        android:hint="Enter Full Name"
                         android:inputType="textPersonName"
                         android:autofillHints="name"
                         android:textColor="#1A1A1A"/>
@@ -107,7 +107,7 @@
                         android:id="@+id/emailEdit"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter Email"
+                        android:hint="Enter Email Address"
                         android:inputType="textEmailAddress"
                         android:autofillHints="emailAddress"
                         android:textColor="#1A1A1A"/>
@@ -181,20 +181,22 @@
                     android:textColor="#FFFFFF"
                     android:backgroundTint="#3B7597"
                     app:cornerRadius="14dp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:textAllCaps="false"/>
 
                 <!-- CANCEL -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/cancelBtn"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
-                    android:layout_marginTop="10dp"
                     android:text="Cancel"
                     android:textColor="#3B7597"
-                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    app:strokeColor="#3B7597"
                     app:cornerRadius="14dp"
-                    app:strokeColor="#3B7597" />
+                    android:textStyle="bold"
+                    android:textAllCaps="false"/>
 
             </LinearLayout>
 

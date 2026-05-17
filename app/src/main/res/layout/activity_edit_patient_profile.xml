@@ -70,7 +70,7 @@
                     android:orientation="vertical"
                     android:padding="18dp">
 
-                    <!-- Full Name -->
+                    <!-- Labels and Hints in Title Case -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -91,7 +91,6 @@
                         android:padding="10dp"
                         android:textSize="15sp" />
 
-                    <!-- Email -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -107,13 +106,12 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:backgroundTint="#2FA084"
-                        android:hint="Enter Email"
+                        android:hint="Enter Email Address"
                         android:inputType="textEmailAddress"
                         android:autofillHints="emailAddress"
                         android:padding="10dp"
                         android:textSize="15sp" />
 
-                    <!-- Age -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -135,7 +133,6 @@
                         android:padding="10dp"
                         android:textSize="15sp" />
 
-                    <!-- Gender -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -151,13 +148,12 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:backgroundTint="#2FA084"
-                        android:hint="Ender Gender"
+                        android:hint="Enter Gender"
                         android:inputType="text"
                         android:autofillHints="none"
                         android:padding="10dp"
                         android:textSize="15sp" />
 
-                    <!-- Save Button -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/saveBtn"
                         android:layout_width="match_parent"
@@ -168,6 +164,7 @@
                         android:textColor="#FFFFFF"
                         android:textSize="15sp"
                         android:textStyle="bold"
+                        android:textAllCaps="false"
                         app:cornerRadius="14dp" />
 
                 </LinearLayout>

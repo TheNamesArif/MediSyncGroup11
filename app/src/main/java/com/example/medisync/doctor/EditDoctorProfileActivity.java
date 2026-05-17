@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -22,7 +23,7 @@ import java.util.Map;
 public class EditDoctorProfileActivity extends AppCompatActivity {
 
     EditText nameEdit, emailEdit, ageEdit, genderEdit;
-    Button saveBtn, backBtn;
+    Button saveBtn, backBtn, cancelBtn;
 
     FirebaseAuth mAuth;
     FirebaseFirestore db;
@@ -40,6 +41,7 @@ public class EditDoctorProfileActivity extends AppCompatActivity {
 
         saveBtn = findViewById(R.id.saveBtn);
         backBtn = findViewById(R.id.backBtn);
+        cancelBtn = findViewById(R.id.cancelBtn);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -58,8 +60,9 @@ public class EditDoctorProfileActivity extends AppCompatActivity {
         // Save button
         saveBtn.setOnClickListener(v -> updateProfile(user.getUid()));
 
-        // Back button
-        backBtn.setOnClickListener(v -> finish());
+        // Back buttons
+        if (backBtn != null) backBtn.setOnClickListener(v -> finish());
+        if (cancelBtn != null) cancelBtn.setOnClickListener(v -> finish());
     }
 
     private void loadProfile(String uid) {
@@ -67,14 +70,15 @@ public class EditDoctorProfileActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(doc -> {
                     if (doc.exists()) {
-
                         nameEdit.setText(doc.getString("fullName"));
                         emailEdit.setText(doc.getString("email"));
-                        ageEdit.setText(String.valueOf(doc.get("age")));
+                        
+                        Object ageObj = doc.get("age");
+                        ageEdit.setText(ageObj != null ? String.valueOf(ageObj) : "");
+                        
                         genderEdit.setText(doc.getString("gender"));
-
                     } else {
-                        Toast.makeText(this, "Profile not found", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Profile Not Found", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e ->
@@ -83,16 +87,18 @@ public class EditDoctorProfileActivity extends AppCompatActivity {
     }
 
     private void updateProfile(String uid) {
-
         String name = nameEdit.getText().toString().trim();
         String email = emailEdit.getText().toString().trim();
         String age = ageEdit.getText().toString().trim();
         String gender = genderEdit.getText().toString().trim();
 
-        if (name.isEmpty() || email.isEmpty()) {
-            Toast.makeText(this, "Name and Email cannot be empty", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email)) {
+            Toast.makeText(this, "Name And Email Cannot Be Empty", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        saveBtn.setEnabled(false);
+        saveBtn.setText("Updating...");
 
         Map<String, Object> updates = new HashMap<>();
         updates.put("fullName", name);
@@ -103,18 +109,16 @@ public class EditDoctorProfileActivity extends AppCompatActivity {
         db.collection("users").document(uid)
                 .update(updates)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Profile updated successfully", Toast.LENGTH_SHORT).show();
-
-                    // return to profile page after save
+                    Toast.makeText(this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
+                    
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        Intent intent = new Intent(this, DoctorProfileActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
                         finish();
                     }, 800);
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Update Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    saveBtn.setEnabled(true);
+                    saveBtn.setText("Save Changes");
+                });
     }
 }

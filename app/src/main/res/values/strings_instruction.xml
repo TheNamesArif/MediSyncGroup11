@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="instruction_array">
+        <item>Select Instruction</item>
+        <item>Before Meal</item>
+        <item>After Meal</item>
+        <item>With Meal</item>
+        <item>On Empty Stomach</item>
+        <item>Before Bedtime</item>
+        <item>Upon Waking</item>
+    </string-array>
+</resources>
