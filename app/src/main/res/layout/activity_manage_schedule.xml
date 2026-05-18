@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F7FA"
     tools:context=".doctor.ManageScheduleActivity">
 
     <!-- Header -->
@@ -233,7 +232,7 @@
                     android:id="@+id/etMedicineName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Medicine Name"
+                    android:hint="Medicine Name / e.g 500mg"
                     android:inputType="text"
                     android:layout_marginBottom="12dp"/>
 
@@ -241,7 +240,7 @@
                     android:id="@+id/etIntakeAmount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Intake Amount (e.g. 500mg)"
+                    android:hint="Intake Amount (berapa bijik)"
                     android:inputType="text"
                     android:layout_marginBottom="12dp"/>
 
