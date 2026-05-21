@@ -26,19 +26,19 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:text="MediSync - Smart Medicine Reminder"
                     android:textSize="14sp"
-                    android:textColor="#A5D6A7"/>
+                    android:textColor="#A5D6A7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:text="Doctor Dashboard"
                     android:textSize="24sp"
                     android:textStyle="bold"
-                    android:textColor="#FFFFFF"/>
+                    android:textColor="#FFFFFF"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
             </LinearLayout>
 
@@ -65,76 +65,27 @@
             app:textColorSelected="#FFFFFF"
             app:selectorColor="#FFFFFF" />
 
-        <!-- Action Buttons Section -->
+        <!-- Timetable Section Title -->
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Choose Action"
+            android:id="@+id/tvDateTitle"
+            android:text="Select A Date"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="#124170"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="20dp"
             android:layout_marginBottom="12dp"/>
 
-        <!-- Row 1: Manage Schedule + Schedule History -->
-        <LinearLayout
+        <!-- Medicine List for the Timetable -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSchedule"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:weightSum="2">
-
-            <!-- Manage Schedule Button -->
-            <LinearLayout
-                android:id="@+id/btnCreateSchedule"
-                android:layout_width="0dp"
-                android:layout_height="130dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:background="@drawable/bg_card_blue"
-                android:clickable="true"
-                android:focusable="true">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Manage Medicine"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFFFFF"
-                    android:gravity="center"/>
-
-            </LinearLayout>
-
-            <!-- Schedule History Button -->
-            <LinearLayout
-                android:id="@+id/btnViewPatients"
-                android:layout_width="0dp"
-                android:layout_height="130dp"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:background="@drawable/bg_card_green"
-                android:clickable="true"
-                android:focusable="true">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Schedule History"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFFFFF"
-                    android:gravity="center"/>
-
-            </LinearLayout>
-
-        </LinearLayout>
+            android:nestedScrollingEnabled="false"/>
 
     </LinearLayout>
 

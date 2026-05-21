@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#F5F7FA"
     tools:context=".doctor.ManageScheduleActivity">
 
     <!-- Header -->
@@ -37,22 +38,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="MediSync - Smart Medicine Reminder"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:textColor="#A5D6A7"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Manage Medicine"
-                android:textSize="24sp"
+                android:text="Manage Schedule"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"/>
-
         </LinearLayout>
-
     </LinearLayout>
 
-    <!-- Main Content -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -70,25 +68,24 @@
                 android:orientation="vertical"
                 android:background="#FFFFFF"
                 android:padding="16dp"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="12dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Step 1: Select Patient"
-                    android:textSize="16sp"
+                    android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="#124170"
-                    android:layout_marginBottom="12dp"/>
+                    android:layout_marginBottom="8dp"/>
 
                 <Spinner
                     android:id="@+id/spinnerPatients"
                     android:layout_width="match_parent"
                     android:layout_height="48dp" />
-
             </LinearLayout>
 
-            <!-- Step 2: Patient Information -->
+            <!-- Step 2: Patient Info (Hidden until selected) -->
             <LinearLayout
                 android:id="@+id/patientInfoSection"
                 android:layout_width="match_parent"
@@ -96,118 +93,72 @@
                 android:orientation="vertical"
                 android:background="@drawable/bg_card_blue"
                 android:padding="16dp"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 android:visibility="gone">
-
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/tvPatientName"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Step 2: Patient Information"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
                     android:textColor="#FFFFFF"
-                    android:layout_marginBottom="16dp"/>
-
-                <LinearLayout
+                    android:textStyle="bold"
+                    android:text="Patient Name"/>
+                <TextView
+                    android:id="@+id/tvPatientEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Name:"
-                        android:textColor="#E0E0E0"/>
-                    <TextView
-                        android:id="@+id/tvPatientName"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:text="N/A"
-                        android:textStyle="bold"
-                        android:textColor="#FFFFFF"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Email:"
-                        android:textColor="#E0E0E0"/>
-                    <TextView
-                        android:id="@+id/tvPatientEmail"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:text="N/A"
-                        android:textStyle="bold"
-                        android:textColor="#FFFFFF"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Age:"
-                        android:textColor="#E0E0E0"/>
-                    <TextView
-                        android:id="@+id/tvPatientAge"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:text="N/A"
-                        android:textStyle="bold"
-                        android:textColor="#FFFFFF"/>
-                </LinearLayout>
-
+                    android:textColor="#E0E0E0"
+                    android:textSize="13sp"
+                    android:text="Email"/>
             </LinearLayout>
 
-            <!-- Step 3: Date Selection -->
+            <!-- Step 3: Schedule Range & Remarks -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="#FFFFFF"
                 android:padding="16dp"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="12dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Step 3: Schedule Date"
-                    android:textSize="16sp"
+                    android:text="Step 2: Schedule Settings"
+                    android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="#124170"
                     android:layout_marginBottom="12dp"/>
 
-                <TextView
-                    android:id="@+id/tvSelectedDate"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Select Date"
-                    android:textSize="15sp"
-                    android:textColor="#333333"
-                    android:layout_marginBottom="12dp"/>
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+                    <Button
+                        android:id="@+id/btnStartDate"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Start Date"
+                        android:layout_marginEnd="4dp"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                    <Button
+                        android:id="@+id/btnEndDate"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="End Date"
+                        android:layout_marginStart="4dp"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                </LinearLayout>
 
-                <Button
-                    android:id="@+id/btnSelectDate"
-                    android:layout_width="wrap_content"
+                <EditText
+                    android:id="@+id/etRemarks"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Change Date"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:textColor="#3B7597"
-                    app:strokeColor="#3B7597"/>
-
+                    android:hint="Remarks (e.g. For Blood Pressure)"
+                    android:inputType="textMultiLine"
+                    android:layout_marginTop="8dp"/>
             </LinearLayout>
 
             <!-- Step 4: Add Medicine -->
@@ -217,56 +168,97 @@
                 android:orientation="vertical"
                 android:background="#FFFFFF"
                 android:padding="16dp"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="12dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Step 4: Add Medicine"
-                    android:textSize="16sp"
+                    android:text="Step 3: Add Medicine"
+                    android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="#124170"
-                    android:layout_marginBottom="16dp"/>
+                    android:layout_marginBottom="12dp"/>
 
                 <EditText
                     android:id="@+id/etMedicineName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Medicine Name / e.g 500mg"
+                    android:hint="Medicine Name (e.g. Paracetamol 500mg)"
                     android:inputType="text"
-                    android:layout_marginBottom="12dp"/>
+                    android:layout_marginBottom="8dp"/>
 
-                <EditText
-                    android:id="@+id/etIntakeAmount"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Intake Amount (berapa bijik)"
-                    android:inputType="text"
-                    android:layout_marginBottom="12dp"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <EditText
+                        android:id="@+id/etIntakeAmount"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Amount"
+                        android:inputType="numberDecimal"/>
+                    <Spinner
+                        android:id="@+id/spinnerUnit"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1" />
+                </LinearLayout>
 
                 <Spinner
                     android:id="@+id/spinnerInstruction"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:layout_marginBottom="16dp"/>
+                    android:layout_marginTop="8dp"/>
+
+                <!-- Intake Times -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Intake Times"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="12dp"/>
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:id="@+id/tvSelectedTimes"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="No Times Added"
+                        android:textColor="#666666"/>
+                    <Button
+                        android:id="@+id/btnAddTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Add Time"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"/>
+                </LinearLayout>
 
                 <Button
                     android:id="@+id/btnAddMedicine"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="+ Add To List"
+                    android:text="+ Add Medicine To List"
+                    android:layout_marginTop="16dp"
                     android:backgroundTint="#3B7597"/>
-
             </LinearLayout>
 
-            <!-- Step 5: Save -->
             <Button
                 android:id="@+id/btnSaveSchedule"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="Save Schedule"
+                android:layout_height="56dp"
+                android:text="Save Full Schedule"
                 android:backgroundTint="#2E7D32"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginBottom="20dp"/>
 
         </LinearLayout>
     </ScrollView>

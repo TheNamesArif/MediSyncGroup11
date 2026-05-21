@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -12,12 +13,24 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.medisync.R;
+import com.example.medisync.adapter.MedicineAdapter;
 import com.example.medisync.auth.LoginActivity;
+import com.example.medisync.model.Medicine;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import devs.mulham.horizontalcalendar.HorizontalCalendar;
 import devs.mulham.horizontalcalendar.HorizontalCalendarView;
@@ -25,25 +38,41 @@ import devs.mulham.horizontalcalendar.utils.HorizontalCalendarListener;
 
 public class DoctorHomeActivity extends AppCompatActivity {
 
+    private TextView tvDateTitle;
+    private RecyclerView rvSchedule;
+    private MedicineAdapter adapter;
+    private List<Medicine> medicineList = new ArrayList<>();
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_doctor_home);
+        
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // Define start and end date range
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+
+        // Initialize UI
+        tvDateTitle = findViewById(R.id.tvDateTitle);
+        rvSchedule = findViewById(R.id.rvSchedule);
+        rvSchedule.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new MedicineAdapter(medicineList);
+        rvSchedule.setAdapter(adapter);
+
+        // Setup Calendar
         Calendar startDate = Calendar.getInstance();
-        startDate.add(Calendar.MONTH, -1);  // 1 month ago
-
+        startDate.add(Calendar.MONTH, -1);
         Calendar endDate = Calendar.getInstance();
-        endDate.add(Calendar.MONTH, 1);     // 1 month ahead
+        endDate.add(Calendar.MONTH, 1);
 
-        // Build the calendar
         HorizontalCalendar horizontalCalendar = new HorizontalCalendar.Builder(this, R.id.calendarView)
                 .range(startDate, endDate)
                 .datesNumberOnScreen(5)
@@ -52,70 +81,106 @@ public class DoctorHomeActivity extends AppCompatActivity {
         horizontalCalendar.setCalendarListener(new HorizontalCalendarListener() {
             @Override
             public void onDateSelected(Calendar date, int position) {
-                // Handle selected date
-            }
-
-            @Override
-            public void onCalendarScroll(HorizontalCalendarView calendarView, int dx, int dy) { }
-
-            @Override
-            public boolean onDateLongClicked(Calendar date, int position) {
-                return true;
+                updateTimetable(date);
             }
         });
+
+        // Load initial data for today
+        updateTimetable(Calendar.getInstance());
 
         // Menu button
         ImageButton imgBtnMenu = findViewById(R.id.imgBtnMenu);
         imgBtnMenu.setOnClickListener(v -> showDropdownMenu(v));
+    }
 
-        // Manage Schedule button
-        View btnCreateSchedule = findViewById(R.id.btnCreateSchedule);
-        btnCreateSchedule.setOnClickListener(v -> {
-            Intent intent = new Intent(DoctorHomeActivity.this, ManageScheduleActivity.class);
-            startActivity(intent);
-        });
+    private void updateTimetable(Calendar calendar) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
+        tvDateTitle.setText("Schedule For " + sdf.format(calendar.getTime()));
+        fetchSchedulesFromFirebase(calendar.getTime());
+    }
 
-        // View Schedule History button
-        View btnViewScheduleHistory = findViewById(R.id.btnViewPatients);
-        btnViewScheduleHistory.setOnClickListener(v -> {
-            Intent intent = new Intent(DoctorHomeActivity.this, ViewScheduleHistoryActivity.class);
-            startActivity(intent);
-        });
+    private void fetchSchedulesFromFirebase(Date selectedDate) {
+        if (mAuth.getUid() == null) return;
+
+        // Reset the time for accurate range comparison
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(selectedDate);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date targetDate = cal.getTime();
+
+        // Step 1: Query schedules that start on or before the selected date
+        db.collectionGroup("medicines")
+                .whereEqualTo("doctorId", mAuth.getUid())
+                .whereLessThanOrEqualTo("startDate", targetDate)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    medicineList.clear();
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        Date rangeEndDate = doc.getDate("endDate");
+                        
+                        // Step 2: Ensure the schedule hasn't ended yet
+                        if (rangeEndDate != null && !rangeEndDate.before(targetDate)) {
+                            List<Map<String, Object>> meds = (List<Map<String, Object>>) doc.get("medicines");
+                            if (meds != null) {
+                                for (Map<String, Object> medData : meds) {
+                                    // FIXED: Passing all 6 parameters required by the constructor
+                                    medicineList.add(new Medicine(
+                                            (String) medData.get("name"),
+                                            (String) medData.get("amount"),
+                                            (String) medData.get("unit"),
+                                            (String) medData.get("instruction"),
+                                            (List<String>) medData.get("intakeTimes"),
+                                            (String) medData.get("status")
+                                    ));
+                                }
+                            }
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    if (e.getMessage() != null && e.getMessage().contains("index")) {
+                        Toast.makeText(this, "Please create required Firestore index. Check Logcat for link.", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(this, "Error Loading Schedule", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void showDropdownMenu(View anchor) {
         PopupMenu popup = new PopupMenu(this, anchor);
-
-        // Add menu items manually
         popup.getMenu().add(0, 1, 0, "Profile");
-        popup.getMenu().add(0, 2, 1, "Log out");
+        popup.getMenu().add(0, 2, 1, "Manage Schedule");
+        popup.getMenu().add(0, 3, 2, "Schedule History");
+        popup.getMenu().add(0, 4, 3, "Log Out");
 
         popup.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
                 case 1:
-                    // go to Profile
                     startActivity(new Intent(this, DoctorProfileActivity.class));
                     return true;
                 case 2:
-                    // Logout
+                    startActivity(new Intent(this, ManageScheduleActivity.class));
+                    return true;
+                case 3:
+                    startActivity(new Intent(this, ViewScheduleHistoryActivity.class));
+                    return true;
+                case 4:
                     logoutUser();
                     return true;
                 default:
                     return false;
             }
         });
-
         popup.show();
     }
 
     private void logoutUser() {
-        // Sign out from Firebase Auth (clears session)
-        FirebaseAuth.getInstance().signOut();
-
-        // Give sign out message
-        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
-
-        // Redirect to login and clear back stack
+        mAuth.signOut();
+        Toast.makeText(this, "Logged Out Successfully", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(DoctorHomeActivity.this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

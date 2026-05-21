@@ -1,16 +1,18 @@
 package com.example.medisync.doctor;
 
-import android.os.Bundle;
-import android.widget.ImageButton;
-import android.widget.Spinner;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
-import android.widget.EditText;
-import android.widget.Button;
-import android.widget.Toast;
-import android.view.View;
-import android.widget.LinearLayout;
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,8 +22,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.medisync.R;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,20 +38,22 @@ public class ManageScheduleActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private FirebaseAuth auth;
-    
-    private Spinner spinnerPatients;
+
+    private Spinner spinnerPatients, spinnerUnit, spinnerInstruction;
     private LinearLayout patientInfoSection;
-    private TextView tvPatientName, tvPatientEmail, tvPatientAge;
-    private EditText etMedicineName, etIntakeAmount;
-    private Spinner spinnerInstruction;
-    private Button btnAddMedicine, btnSaveSchedule, btnSelectDate;
-    private TextView tvSelectedDate;
-    
+    private TextView tvPatientName, tvPatientEmail, tvSelectedTimes;
+    private EditText etMedicineName, etIntakeAmount, etRemarks;
+    private Button btnStartDate, btnEndDate, btnAddTime, btnAddMedicine, btnSaveSchedule;
+
     private List<String> patientIds = new ArrayList<>();
     private List<String> patientNames = new ArrayList<>();
+    private List<String> currentIntakeTimes = new ArrayList<>();
+    private List<Map<String, Object>> medicineList = new ArrayList<>();
+    
+    private Date startDate, endDate;
     private String selectedPatientId;
-    private List<Map<String, String>> medicineList = new ArrayList<>();
-    private Calendar selectedCalendar = Calendar.getInstance();
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+    private SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,20 +73,18 @@ public class ManageScheduleActivity extends AppCompatActivity {
         initializeViews();
 
         ImageButton btnBack = findViewById(R.id.btnBack);
-        if (btnBack != null) {
-            btnBack.setOnClickListener(v -> finish());
-        }
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
         loadPatients();
 
+        // Step 1: Patient Selection Listener
         spinnerPatients.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                if (position > 0) { 
+                if (position > 0) {
                     selectedPatientId = patientIds.get(position - 1);
                     loadPatientInfo(selectedPatientId);
                     patientInfoSection.setVisibility(View.VISIBLE);
-                    medicineList.clear();
                 } else {
                     patientInfoSection.setVisibility(View.GONE);
                     selectedPatientId = null;
@@ -92,7 +94,10 @@ public class ManageScheduleActivity extends AppCompatActivity {
             public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
 
-        btnSelectDate.setOnClickListener(v -> showDatePicker());
+        // Step 2 & 3: Date, Time and List Listeners
+        btnStartDate.setOnClickListener(v -> showDatePicker(true));
+        btnEndDate.setOnClickListener(v -> showDatePicker(false));
+        btnAddTime.setOnClickListener(v -> showTimePicker());
         btnAddMedicine.setOnClickListener(v -> addMedicineToList());
         btnSaveSchedule.setOnClickListener(v -> saveScheduleToFirebase());
     }
@@ -102,119 +107,126 @@ public class ManageScheduleActivity extends AppCompatActivity {
         patientInfoSection = findViewById(R.id.patientInfoSection);
         tvPatientName = findViewById(R.id.tvPatientName);
         tvPatientEmail = findViewById(R.id.tvPatientEmail);
-        tvPatientAge = findViewById(R.id.tvPatientAge);
+        
+        btnStartDate = findViewById(R.id.btnStartDate);
+        btnEndDate = findViewById(R.id.btnEndDate);
+        etRemarks = findViewById(R.id.etRemarks);
+        
         etMedicineName = findViewById(R.id.etMedicineName);
         etIntakeAmount = findViewById(R.id.etIntakeAmount);
+        spinnerUnit = findViewById(R.id.spinnerUnit);
         spinnerInstruction = findViewById(R.id.spinnerInstruction);
+        tvSelectedTimes = findViewById(R.id.tvSelectedTimes);
+        btnAddTime = findViewById(R.id.btnAddTime);
         btnAddMedicine = findViewById(R.id.btnAddMedicine);
         btnSaveSchedule = findViewById(R.id.btnSaveSchedule);
-        btnSelectDate = findViewById(R.id.btnSelectDate);
-        tvSelectedDate = findViewById(R.id.tvSelectedDate);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+        // Step 4: Unit Options (Pills/ML)
+        String[] units = {"Pills", "ML"};
+        spinnerUnit.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, units));
+
+        // Step 3: Instructions
+        ArrayAdapter<CharSequence> insAdapter = ArrayAdapter.createFromResource(this,
                 R.array.instruction_array, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerInstruction.setAdapter(adapter);
+        insAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerInstruction.setAdapter(insAdapter);
 
         patientInfoSection.setVisibility(View.GONE);
-        updateDateDisplay();
     }
 
-    private void showDatePicker() {
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                (view, year, month, day) -> {
-                    selectedCalendar.set(year, month, day);
-                    updateDateDisplay();
-                },
-                selectedCalendar.get(Calendar.YEAR),
-                selectedCalendar.get(Calendar.MONTH),
-                selectedCalendar.get(Calendar.DAY_OF_MONTH));
-        datePickerDialog.show();
+    private void showDatePicker(boolean isStartDate) {
+        Calendar cal = Calendar.getInstance();
+        new DatePickerDialog(this, (view, year, month, day) -> {
+            cal.set(year, month, day);
+            if (isStartDate) {
+                startDate = cal.getTime();
+                btnStartDate.setText(dateFormat.format(startDate));
+            } else {
+                endDate = cal.getTime();
+                btnEndDate.setText(dateFormat.format(endDate));
+            }
+        }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
     }
 
-    private void updateDateDisplay() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
-        tvSelectedDate.setText(sdf.format(selectedCalendar.getTime()));
+    private void showTimePicker() {
+        Calendar cal = Calendar.getInstance();
+        new TimePickerDialog(this, (view, hourOfDay, minute) -> {
+            cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            cal.set(Calendar.MINUTE, minute);
+            String time = timeFormat.format(cal.getTime());
+            currentIntakeTimes.add(time);
+            updateSelectedTimesUI();
+        }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), false).show();
+    }
+
+    private void updateSelectedTimesUI() {
+        if (currentIntakeTimes.isEmpty()) {
+            tvSelectedTimes.setText("No Times Added");
+        } else {
+            tvSelectedTimes.setText(TextUtils.join(", ", currentIntakeTimes));
+        }
     }
 
     private void loadPatients() {
-        db.collection("users")
-                .whereEqualTo("role", "Patient")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    patientIds.clear();
-                    patientNames.clear();
-                    patientNames.add("Select A Patient"); 
-
-                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        String id = doc.getId();
-                        String name = doc.getString("fullName");
-                        String email = doc.getString("email");
-                        
-                        patientIds.add(id);
-                        // FIX: Ensure no null values are added to the spinner list
-                        String displayName = (name != null && !name.isEmpty()) ? name : (email != null ? email : "Unknown Patient");
-                        patientNames.add(displayName);
-                    }
-
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                            android.R.layout.simple_spinner_item, patientNames);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    spinnerPatients.setAdapter(adapter);
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Error Loading Patients", Toast.LENGTH_SHORT).show());
+        db.collection("users").whereEqualTo("role", "Patient").get().addOnSuccessListener(querySnapshot -> {
+            patientIds.clear(); patientNames.clear();
+            patientNames.add("Select A Patient");
+            for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                patientIds.add(doc.getId());
+                String name = doc.getString("fullName");
+                patientNames.add(name != null ? name : doc.getString("email"));
+            }
+            spinnerPatients.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, patientNames));
+        });
     }
 
-    private void loadPatientInfo(String patientId) {
-        db.collection("users").document(patientId).get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        String name = doc.getString("fullName");
-                        String email = doc.getString("email");
-                        
-                        // FIX: Safely handle age as Object to support both Number and String formats
-                        Object ageObj = doc.get("age");
-                        String ageStr = (ageObj != null) ? String.valueOf(ageObj) : "Not Set";
-
-                        tvPatientName.setText(name != null ? name : "Not Set");
-                        tvPatientEmail.setText(email != null ? email : "Not Set");
-                        tvPatientAge.setText(ageStr.equals("Not Set") ? ageStr : ageStr + " Years");
-                    }
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Error Loading Patient Info", Toast.LENGTH_SHORT).show());
+    private void loadPatientInfo(String id) {
+        db.collection("users").document(id).get().addOnSuccessListener(doc -> {
+            tvPatientName.setText(doc.getString("fullName"));
+            tvPatientEmail.setText(doc.getString("email"));
+        });
     }
 
     private void addMedicineToList() {
         String name = etMedicineName.getText().toString().trim();
         String amount = etIntakeAmount.getText().toString().trim();
-        String instr = spinnerInstruction.getSelectedItem().toString();
-
-        if (name.isEmpty() || amount.isEmpty()) {
-            Toast.makeText(this, "Please Fill In All Fields", Toast.LENGTH_SHORT).show();
+        
+        if (name.isEmpty() || amount.isEmpty() || currentIntakeTimes.isEmpty()) {
+            Toast.makeText(this, "Please Fill All Medicine Details And Add Times", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Map<String, String> medicine = new HashMap<>();
+        Map<String, Object> medicine = new HashMap<>();
         medicine.put("name", name);
         medicine.put("amount", amount);
-        medicine.put("instruction", instr);
-        medicineList.add(medicine);
+        medicine.put("unit", spinnerUnit.getSelectedItem().toString());
+        medicine.put("instruction", spinnerInstruction.getSelectedItem().toString());
+        medicine.put("intakeTimes", new ArrayList<>(currentIntakeTimes));
+        medicine.put("status", "pending");
 
+        medicineList.add(medicine);
+        
+        // Reset fields for the next medicine entry
         etMedicineName.setText("");
         etIntakeAmount.setText("");
+        currentIntakeTimes.clear();
+        updateSelectedTimesUI();
         Toast.makeText(this, "Medicine Added To List", Toast.LENGTH_SHORT).show();
     }
 
     private void saveScheduleToFirebase() {
-        if (selectedPatientId == null || medicineList.isEmpty()) {
-            Toast.makeText(this, "Please Select A Patient And Add Medicine", Toast.LENGTH_SHORT).show();
+        if (selectedPatientId == null || medicineList.isEmpty() || startDate == null || endDate == null) {
+            Toast.makeText(this, "Please Complete All Steps (Patient, Dates, Medicines)", Toast.LENGTH_SHORT).show();
             return;
         }
 
         Map<String, Object> schedule = new HashMap<>();
         schedule.put("medicines", medicineList);
-        schedule.put("createdAt", new Date(selectedCalendar.getTimeInMillis()));
+        schedule.put("startDate", startDate);
+        schedule.put("endDate", endDate);
+        schedule.put("remarks", etRemarks.getText().toString().trim());
         schedule.put("doctorId", auth.getCurrentUser().getUid());
+        schedule.put("createdAt", new Date());
 
         db.collection("users").document(selectedPatientId).collection("medicines").add(schedule)
                 .addOnSuccessListener(ref -> {
@@ -222,15 +234,5 @@ public class ManageScheduleActivity extends AppCompatActivity {
                     finish();
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Error Saving Schedule", Toast.LENGTH_SHORT).show());
-    }
-
-    private void clearForm() {
-        etMedicineName.setText("");
-        etIntakeAmount.setText("");
-        spinnerInstruction.setSelection(0);
-        spinnerPatients.setSelection(0);
-        patientInfoSection.setVisibility(View.GONE);
-        selectedCalendar = Calendar.getInstance();
-        updateDateDisplay();
     }
 }
