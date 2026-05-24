@@ -2,6 +2,7 @@ package com.example.medisync.doctor;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
@@ -30,7 +31,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import devs.mulham.horizontalcalendar.HorizontalCalendar;
 import devs.mulham.horizontalcalendar.HorizontalCalendarView;
@@ -85,7 +85,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
             }
         });
 
-        // Load initial data for today
+        // Load today
         updateTimetable(Calendar.getInstance());
 
         // Menu button
@@ -102,48 +102,45 @@ public class DoctorHomeActivity extends AppCompatActivity {
     private void fetchSchedulesFromFirebase(Date selectedDate) {
         if (mAuth.getUid() == null) return;
 
-        // Reset the time for accurate range comparison
+        // Strip time from selected date for accurate range comparison
         Calendar cal = Calendar.getInstance();
         cal.setTime(selectedDate);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        Date targetDate = cal.getTime();
+        cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0);
+        Date targetStart = cal.getTime();
 
-        // Step 1: Query schedules that start on or before the selected date
+        cal.set(Calendar.HOUR_OF_DAY, 23); cal.set(Calendar.MINUTE, 59); cal.set(Calendar.SECOND, 59);
+        Date targetEnd = cal.getTime();
+
+        // Query: Show all medicines where (StartDate <= end of day)
         db.collectionGroup("medicines")
                 .whereEqualTo("doctorId", mAuth.getUid())
-                .whereLessThanOrEqualTo("startDate", targetDate)
+                .whereLessThanOrEqualTo("startDate", targetEnd)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     medicineList.clear();
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Date rangeEndDate = doc.getDate("endDate");
                         
-                        // Step 2: Ensure the schedule hasn't ended yet
-                        if (rangeEndDate != null && !rangeEndDate.before(targetDate)) {
-                            List<Map<String, Object>> meds = (List<Map<String, Object>>) doc.get("medicines");
-                            if (meds != null) {
-                                for (Map<String, Object> medData : meds) {
-                                    // FIXED: Passing all 6 parameters required by the constructor
-                                    medicineList.add(new Medicine(
-                                            (String) medData.get("name"),
-                                            (String) medData.get("amount"),
-                                            (String) medData.get("unit"),
-                                            (String) medData.get("instruction"),
-                                            (List<String>) medData.get("intakeTimes"),
-                                            (String) medData.get("status")
-                                    ));
-                                }
-                            }
+                        // Client-side Check: Ensure schedule hasn't ended yet
+                        if (rangeEndDate != null && !rangeEndDate.before(targetStart)) {
+                            // Extract medicine data (Flattened structure)
+                            medicineList.add(new Medicine(
+                                    doc.getString("name"),
+                                    doc.getString("amount"),
+                                    doc.getString("unit"),
+                                    doc.getString("instruction"),
+                                    (List<String>) doc.get("intakeTimes"),
+                                    doc.getString("status"),
+                                    doc.getString("patientName")
+                            ));
                         }
                     }
                     adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
+                    Log.e("DashboardError", "Error fetching dashboard", e);
                     if (e.getMessage() != null && e.getMessage().contains("index")) {
-                        Toast.makeText(this, "Please create required Firestore index. Check Logcat for link.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Setup Required: Create Firestore Index (Check Logcat Link)", Toast.LENGTH_LONG).show();
                     } else {
                         Toast.makeText(this, "Error Loading Schedule", Toast.LENGTH_SHORT).show();
                     }
@@ -159,20 +156,11 @@ public class DoctorHomeActivity extends AppCompatActivity {
 
         popup.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
-                case 1:
-                    startActivity(new Intent(this, DoctorProfileActivity.class));
-                    return true;
-                case 2:
-                    startActivity(new Intent(this, ManageScheduleActivity.class));
-                    return true;
-                case 3:
-                    startActivity(new Intent(this, ViewScheduleHistoryActivity.class));
-                    return true;
-                case 4:
-                    logoutUser();
-                    return true;
-                default:
-                    return false;
+                case 1: startActivity(new Intent(this, DoctorProfileActivity.class)); return true;
+                case 2: startActivity(new Intent(this, ManageScheduleActivity.class)); return true;
+                case 3: startActivity(new Intent(this, ViewScheduleHistoryActivity.class)); return true;
+                case 4: logoutUser(); return true;
+                default: return false;
             }
         });
         popup.show();

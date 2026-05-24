@@ -31,24 +31,43 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Medicine medicine = medicineList.get(position);
-        holder.tvMedName.setText(medicine.getName());
         
-        // Display Amount and Unit (e.g. 2 Pills or 5.0 ML)
+        // 1. Set Patient Name (Show if it's for the Doctor)
+        if (medicine.getPatientName() != null && !medicine.getPatientName().equals("You")) {
+            holder.tvPatientName.setVisibility(View.VISIBLE);
+            holder.tvPatientName.setText("Patient: " + medicine.getPatientName());
+        } else {
+            holder.tvPatientName.setVisibility(View.GONE);
+        }
+
+        // 2. Basic Info
+        holder.tvMedName.setText(medicine.getName());
         String amountText = medicine.getAmount() + " " + (medicine.getUnit() != null ? medicine.getUnit() : "");
         holder.tvMedAmount.setText(amountText);
-        
         holder.tvMedInstruction.setText(medicine.getInstruction());
         
-        // Display all intake times
+        // 3. Intake Times
         if (medicine.getIntakeTimes() != null && !medicine.getIntakeTimes().isEmpty()) {
-            StringBuilder times = new StringBuilder("Times: ");
+            StringBuilder timesBuilder = new StringBuilder("Times: ");
             for (int i = 0; i < medicine.getIntakeTimes().size(); i++) {
-                times.append(medicine.getIntakeTimes().get(i));
-                if (i < medicine.getIntakeTimes().size() - 1) times.append(", ");
+                timesBuilder.append(medicine.getIntakeTimes().get(i));
+                if (i < medicine.getIntakeTimes().size() - 1) timesBuilder.append(", ");
             }
-            holder.tvStatus.setText(times.toString());
+            holder.tvIntakeTimes.setText(timesBuilder.toString());
         } else {
-            holder.tvStatus.setText("No Times Set");
+            holder.tvIntakeTimes.setText("No Intake Times Set");
+        }
+
+        // 4. Status Logic
+        String status = medicine.getStatus() != null ? medicine.getStatus().toUpperCase() : "PENDING";
+        holder.tvStatus.setText(status);
+
+        if ("TAKEN".equals(status)) {
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_card_green);
+        } else if ("MISSED".equals(status)) {
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_card_orange); 
+        } else {
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_card_blue);
         }
     }
 
@@ -58,14 +77,16 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvMedName, tvMedAmount, tvMedInstruction, tvStatus;
+        TextView tvMedName, tvMedAmount, tvMedInstruction, tvStatus, tvPatientName, tvIntakeTimes;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            tvPatientName = itemView.findViewById(R.id.tvPatientName);
             tvMedName = itemView.findViewById(R.id.tvMedName);
             tvMedAmount = itemView.findViewById(R.id.tvMedAmount);
             tvMedInstruction = itemView.findViewById(R.id.tvMedInstruction);
             tvStatus = itemView.findViewById(R.id.tvStatus);
+            tvIntakeTimes = itemView.findViewById(R.id.tvIntakeTimes);
         }
     }
 }

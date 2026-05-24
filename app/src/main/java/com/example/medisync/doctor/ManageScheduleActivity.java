@@ -24,6 +24,7 @@ import com.example.medisync.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class ManageScheduleActivity extends AppCompatActivity {
     private List<Map<String, Object>> medicineList = new ArrayList<>();
     
     private Date startDate, endDate;
-    private String selectedPatientId;
+    private String selectedPatientId, selectedPatientName;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
     private SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
@@ -77,12 +78,12 @@ public class ManageScheduleActivity extends AppCompatActivity {
 
         loadPatients();
 
-        // Step 1: Patient Selection Listener
         spinnerPatients.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                 if (position > 0) {
                     selectedPatientId = patientIds.get(position - 1);
+                    selectedPatientName = patientNames.get(position);
                     loadPatientInfo(selectedPatientId);
                     patientInfoSection.setVisibility(View.VISIBLE);
                 } else {
@@ -94,7 +95,6 @@ public class ManageScheduleActivity extends AppCompatActivity {
             public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
 
-        // Step 2 & 3: Date, Time and List Listeners
         btnStartDate.setOnClickListener(v -> showDatePicker(true));
         btnEndDate.setOnClickListener(v -> showDatePicker(false));
         btnAddTime.setOnClickListener(v -> showTimePicker());
@@ -107,11 +107,9 @@ public class ManageScheduleActivity extends AppCompatActivity {
         patientInfoSection = findViewById(R.id.patientInfoSection);
         tvPatientName = findViewById(R.id.tvPatientName);
         tvPatientEmail = findViewById(R.id.tvPatientEmail);
-        
         btnStartDate = findViewById(R.id.btnStartDate);
         btnEndDate = findViewById(R.id.btnEndDate);
         etRemarks = findViewById(R.id.etRemarks);
-        
         etMedicineName = findViewById(R.id.etMedicineName);
         etIntakeAmount = findViewById(R.id.etIntakeAmount);
         spinnerUnit = findViewById(R.id.spinnerUnit);
@@ -121,17 +119,13 @@ public class ManageScheduleActivity extends AppCompatActivity {
         btnAddMedicine = findViewById(R.id.btnAddMedicine);
         btnSaveSchedule = findViewById(R.id.btnSaveSchedule);
 
-        // Step 4: Unit Options (Pills/ML)
         String[] units = {"Pills", "ML"};
         spinnerUnit.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, units));
 
-        // Step 3: Instructions
         ArrayAdapter<CharSequence> insAdapter = ArrayAdapter.createFromResource(this,
                 R.array.instruction_array, android.R.layout.simple_spinner_item);
         insAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerInstruction.setAdapter(insAdapter);
-
-        patientInfoSection.setVisibility(View.GONE);
     }
 
     private void showDatePicker(boolean isStartDate) {
@@ -190,9 +184,8 @@ public class ManageScheduleActivity extends AppCompatActivity {
     private void addMedicineToList() {
         String name = etMedicineName.getText().toString().trim();
         String amount = etIntakeAmount.getText().toString().trim();
-        
         if (name.isEmpty() || amount.isEmpty() || currentIntakeTimes.isEmpty()) {
-            Toast.makeText(this, "Please Fill All Medicine Details And Add Times", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please Fill All Medicine Details", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -203,36 +196,40 @@ public class ManageScheduleActivity extends AppCompatActivity {
         medicine.put("instruction", spinnerInstruction.getSelectedItem().toString());
         medicine.put("intakeTimes", new ArrayList<>(currentIntakeTimes));
         medicine.put("status", "pending");
+        medicine.put("patientName", selectedPatientName); // Flattened for dashboard
 
         medicineList.add(medicine);
-        
-        // Reset fields for the next medicine entry
-        etMedicineName.setText("");
-        etIntakeAmount.setText("");
-        currentIntakeTimes.clear();
-        updateSelectedTimesUI();
-        Toast.makeText(this, "Medicine Added To List", Toast.LENGTH_SHORT).show();
+        etMedicineName.setText(""); etIntakeAmount.setText("");
+        currentIntakeTimes.clear(); updateSelectedTimesUI();
+        Toast.makeText(this, "Added: " + name, Toast.LENGTH_SHORT).show();
     }
 
     private void saveScheduleToFirebase() {
         if (selectedPatientId == null || medicineList.isEmpty() || startDate == null || endDate == null) {
-            Toast.makeText(this, "Please Complete All Steps (Patient, Dates, Medicines)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please Complete All Steps", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Map<String, Object> schedule = new HashMap<>();
-        schedule.put("medicines", medicineList);
-        schedule.put("startDate", startDate);
-        schedule.put("endDate", endDate);
-        schedule.put("remarks", etRemarks.getText().toString().trim());
-        schedule.put("doctorId", auth.getCurrentUser().getUid());
-        schedule.put("createdAt", new Date());
+        // Use a Batch write for efficiency
+        WriteBatch batch = db.batch();
+        String remarks = etRemarks.getText().toString().trim();
+        String doctorId = auth.getCurrentUser().getUid();
 
-        db.collection("users").document(selectedPatientId).collection("medicines").add(schedule)
-                .addOnSuccessListener(ref -> {
-                    Toast.makeText(this, "Schedule Saved Successfully", Toast.LENGTH_SHORT).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Error Saving Schedule", Toast.LENGTH_SHORT).show());
+        for (Map<String, Object> med : medicineList) {
+            Map<String, Object> finalDoc = new HashMap<>(med);
+            finalDoc.put("startDate", startDate);
+            finalDoc.put("endDate", endDate);
+            finalDoc.put("remarks", remarks);
+            finalDoc.put("doctorId", doctorId);
+            finalDoc.put("createdAt", new Date());
+
+            batch.set(db.collection("users").document(selectedPatientId)
+                    .collection("medicines").document(), finalDoc);
+        }
+
+        batch.commit().addOnSuccessListener(aVoid -> {
+            Toast.makeText(this, "Schedule Saved Successfully", Toast.LENGTH_SHORT).show();
+            finish();
+        }).addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }

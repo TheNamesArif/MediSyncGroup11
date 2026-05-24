@@ -2,6 +2,7 @@ package com.example.medisync.patient;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
@@ -30,7 +31,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import devs.mulham.horizontalcalendar.HorizontalCalendar;
 import devs.mulham.horizontalcalendar.HorizontalCalendarView;
@@ -102,42 +102,43 @@ public class PatientHomeActivity extends AppCompatActivity {
     private void fetchSchedulesFromFirebase(Date selectedDate) {
         if (mAuth.getUid() == null) return;
 
-        // Reset the time for accurate range comparison
+        // Strip time from selected date for accurate range comparison
         Calendar cal = Calendar.getInstance();
         cal.setTime(selectedDate);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        Date targetDate = cal.getTime();
+        cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0);
+        Date targetStart = cal.getTime();
+
+        cal.set(Calendar.HOUR_OF_DAY, 23); cal.set(Calendar.MINUTE, 59); cal.set(Calendar.SECOND, 59);
+        Date targetEnd = cal.getTime();
 
         // Query the patient's specific medicines where selected date falls within range
         db.collection("users").document(mAuth.getUid()).collection("medicines")
-                .whereLessThanOrEqualTo("startDate", targetDate)
+                .whereLessThanOrEqualTo("startDate", targetEnd)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     medicineList.clear();
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Date rangeEndDate = doc.getDate("endDate");
-                        if (rangeEndDate != null && !rangeEndDate.before(targetDate)) {
-                            List<Map<String, Object>> meds = (List<Map<String, Object>>) doc.get("medicines");
-                            if (meds != null) {
-                                for (Map<String, Object> medData : meds) {
-                                    medicineList.add(new Medicine(
-                                            (String) medData.get("name"),
-                                            (String) medData.get("amount"),
-                                            (String) medData.get("unit"),
-                                            (String) medData.get("instruction"),
-                                            (List<String>) medData.get("intakeTimes"),
-                                            (String) medData.get("status")
-                                    ));
-                                }
-                            }
+                        
+                        // Local check: ensure the schedule has not ended before the selected date
+                        if (rangeEndDate != null && !rangeEndDate.before(targetStart)) {
+                            medicineList.add(new Medicine(
+                                    doc.getString("name"),
+                                    doc.getString("amount"),
+                                    doc.getString("unit"),
+                                    doc.getString("instruction"),
+                                    (List<String>) doc.get("intakeTimes"),
+                                    doc.getString("status"),
+                                    "You"
+                            ));
                         }
                     }
                     adapter.notifyDataSetChanged();
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Error Loading Schedule", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Log.e("FirestoreError", "Error loading schedule", e);
+                    Toast.makeText(this, "Error Loading Schedule", Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void showDropdownMenu(View anchor) {

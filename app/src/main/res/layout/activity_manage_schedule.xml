@@ -85,7 +85,7 @@
                     android:layout_height="48dp" />
             </LinearLayout>
 
-            <!-- Step 2: Patient Info (Hidden until selected) -->
+            <!-- Patient Information -->
             <LinearLayout
                 android:id="@+id/patientInfoSection"
                 android:layout_width="match_parent"
@@ -111,7 +111,7 @@
                     android:text="Email"/>
             </LinearLayout>
 
-            <!-- Step 3: Schedule Range & Remarks -->
+            <!-- Step 2: Schedule Range & Remarks -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -161,7 +161,7 @@
                     android:layout_marginTop="8dp"/>
             </LinearLayout>
 
-            <!-- Step 4: Add Medicine -->
+            <!-- Step 3: Add Medicine -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -251,6 +251,7 @@
                     android:backgroundTint="#3B7597"/>
             </LinearLayout>
 
+            <!-- Step 4: Save -->
             <Button
                 android:id="@+id/btnSaveSchedule"
                 android:layout_width="match_parent"
