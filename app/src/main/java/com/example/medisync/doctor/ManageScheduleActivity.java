@@ -196,7 +196,8 @@ public class ManageScheduleActivity extends AppCompatActivity {
         medicine.put("instruction", spinnerInstruction.getSelectedItem().toString());
         medicine.put("intakeTimes", new ArrayList<>(currentIntakeTimes));
         medicine.put("status", "pending");
-        medicine.put("patientName", selectedPatientName); // Flattened for dashboard
+        medicine.put("patientName", selectedPatientName);
+        medicine.put("patientUid", selectedPatientId); // Added patientUid to document
 
         medicineList.add(medicine);
         etMedicineName.setText(""); etIntakeAmount.setText("");
@@ -210,7 +211,6 @@ public class ManageScheduleActivity extends AppCompatActivity {
             return;
         }
 
-        // Use a Batch write for efficiency
         WriteBatch batch = db.batch();
         String remarks = etRemarks.getText().toString().trim();
         String doctorId = auth.getCurrentUser().getUid();

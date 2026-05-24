@@ -33,15 +33,13 @@ import java.util.List;
 import java.util.Locale;
 
 import devs.mulham.horizontalcalendar.HorizontalCalendar;
-import devs.mulham.horizontalcalendar.HorizontalCalendarView;
 import devs.mulham.horizontalcalendar.utils.HorizontalCalendarListener;
 
 public class PatientHomeActivity extends AppCompatActivity {
 
     private TextView tvDateTitle;
-    private RecyclerView rvSchedule;
     private MedicineAdapter adapter;
-    private List<Medicine> medicineList = new ArrayList<>();
+    private final List<Medicine> medicineList = new ArrayList<>();
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
@@ -62,7 +60,7 @@ public class PatientHomeActivity extends AppCompatActivity {
 
         // Initialize UI
         tvDateTitle = findViewById(R.id.tvDateTitle);
-        rvSchedule = findViewById(R.id.rvSchedule);
+        RecyclerView rvSchedule = findViewById(R.id.rvSchedule);
         rvSchedule.setLayoutManager(new LinearLayoutManager(this));
         adapter = new MedicineAdapter(medicineList);
         rvSchedule.setAdapter(adapter);
@@ -90,7 +88,7 @@ public class PatientHomeActivity extends AppCompatActivity {
 
         // Menu button (Handles Profile and Logout)
         ImageButton imgBtnMenu = findViewById(R.id.imgBtnMenu);
-        imgBtnMenu.setOnClickListener(v -> showDropdownMenu(v));
+        imgBtnMenu.setOnClickListener(this::showDropdownMenu);
     }
 
     private void updateTimetable(Calendar calendar) {
@@ -106,30 +104,36 @@ public class PatientHomeActivity extends AppCompatActivity {
         Calendar cal = Calendar.getInstance();
         cal.setTime(selectedDate);
         cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0);
-        Date targetStart = cal.getTime();
+        Date targetStartOfDay = cal.getTime();
 
-        cal.set(Calendar.HOUR_OF_DAY, 23); cal.set(Calendar.MINUTE, 59); cal.set(Calendar.SECOND, 59);
-        Date targetEnd = cal.getTime();
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        Date targetEndOfDay = cal.getTime();
 
         // Query the patient's specific medicines where selected date falls within range
         db.collection("users").document(mAuth.getUid()).collection("medicines")
-                .whereLessThanOrEqualTo("startDate", targetEnd)
+                .whereLessThanOrEqualTo("startDate", targetEndOfDay)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     medicineList.clear();
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Date rangeEndDate = doc.getDate("endDate");
                         
-                        // Local check: ensure the schedule has not ended before the selected date
-                        if (rangeEndDate != null && !rangeEndDate.before(targetStart)) {
+                        // Local Check: ensure the schedule has not ended before the selected date
+                        if (rangeEndDate != null && !rangeEndDate.before(targetStartOfDay)) {
+                            // FIXED: Constructor now uses 9 parameters including patientUid
                             medicineList.add(new Medicine(
+                                    doc.getId(),
                                     doc.getString("name"),
                                     doc.getString("amount"),
                                     doc.getString("unit"),
                                     doc.getString("instruction"),
                                     (List<String>) doc.get("intakeTimes"),
                                     doc.getString("status"),
-                                    "You"
+                                    "You",
+                                    mAuth.getUid()
                             ));
                         }
                     }

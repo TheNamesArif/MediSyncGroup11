@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import devs.mulham.horizontalcalendar.HorizontalCalendar;
 import devs.mulham.horizontalcalendar.HorizontalCalendarView;
@@ -85,7 +86,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
             }
         });
 
-        // Load today
+        // Load initial data for today
         updateTimetable(Calendar.getInstance());
 
         // Menu button
@@ -102,7 +103,6 @@ public class DoctorHomeActivity extends AppCompatActivity {
     private void fetchSchedulesFromFirebase(Date selectedDate) {
         if (mAuth.getUid() == null) return;
 
-        // Strip time from selected date for accurate range comparison
         Calendar cal = Calendar.getInstance();
         cal.setTime(selectedDate);
         cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0);
@@ -111,7 +111,6 @@ public class DoctorHomeActivity extends AppCompatActivity {
         cal.set(Calendar.HOUR_OF_DAY, 23); cal.set(Calendar.MINUTE, 59); cal.set(Calendar.SECOND, 59);
         Date targetEnd = cal.getTime();
 
-        // Query: Show all medicines where (StartDate <= end of day)
         db.collectionGroup("medicines")
                 .whereEqualTo("doctorId", mAuth.getUid())
                 .whereLessThanOrEqualTo("startDate", targetEnd)
@@ -121,29 +120,26 @@ public class DoctorHomeActivity extends AppCompatActivity {
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Date rangeEndDate = doc.getDate("endDate");
                         
-                        // Client-side Check: Ensure schedule hasn't ended yet
                         if (rangeEndDate != null && !rangeEndDate.before(targetStart)) {
-                            // Extract medicine data (Flattened structure)
+                            // FIXED: Constructor now uses 9 parameters including documentId and patientUid
                             medicineList.add(new Medicine(
+                                    doc.getId(),
                                     doc.getString("name"),
                                     doc.getString("amount"),
                                     doc.getString("unit"),
                                     doc.getString("instruction"),
                                     (List<String>) doc.get("intakeTimes"),
                                     doc.getString("status"),
-                                    doc.getString("patientName")
+                                    doc.getString("patientName"),
+                                    doc.getString("patientUid")
                             ));
                         }
                     }
                     adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("DashboardError", "Error fetching dashboard", e);
-                    if (e.getMessage() != null && e.getMessage().contains("index")) {
-                        Toast.makeText(this, "Setup Required: Create Firestore Index (Check Logcat Link)", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(this, "Error Loading Schedule", Toast.LENGTH_SHORT).show();
-                    }
+                    Log.e("DashboardError", "Fetch failed", e);
+                    Toast.makeText(this, "Error Loading Schedule", Toast.LENGTH_SHORT).show();
                 });
     }
 
