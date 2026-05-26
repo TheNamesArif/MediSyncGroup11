@@ -31,18 +31,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import devs.mulham.horizontalcalendar.HorizontalCalendar;
-import devs.mulham.horizontalcalendar.HorizontalCalendarView;
 import devs.mulham.horizontalcalendar.utils.HorizontalCalendarListener;
 
 public class DoctorHomeActivity extends AppCompatActivity {
 
     private TextView tvDateTitle;
-    private RecyclerView rvSchedule;
     private MedicineAdapter adapter;
-    private List<Medicine> medicineList = new ArrayList<>();
+    private final List<Medicine> medicineList = new ArrayList<>();
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
@@ -63,7 +60,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
 
         // Initialize UI
         tvDateTitle = findViewById(R.id.tvDateTitle);
-        rvSchedule = findViewById(R.id.rvSchedule);
+        RecyclerView rvSchedule = findViewById(R.id.rvSchedule);
         rvSchedule.setLayoutManager(new LinearLayoutManager(this));
         adapter = new MedicineAdapter(medicineList);
         rvSchedule.setAdapter(adapter);
@@ -91,7 +88,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
 
         // Menu button
         ImageButton imgBtnMenu = findViewById(R.id.imgBtnMenu);
-        imgBtnMenu.setOnClickListener(v -> showDropdownMenu(v));
+        imgBtnMenu.setOnClickListener(this::showDropdownMenu);
     }
 
     private void updateTimetable(Calendar calendar) {
@@ -121,7 +118,6 @@ public class DoctorHomeActivity extends AppCompatActivity {
                         Date rangeEndDate = doc.getDate("endDate");
                         
                         if (rangeEndDate != null && !rangeEndDate.before(targetStart)) {
-                            // FIXED: Constructor now uses 9 parameters including documentId and patientUid
                             medicineList.add(new Medicine(
                                     doc.getId(),
                                     doc.getString("name"),
@@ -148,14 +144,16 @@ public class DoctorHomeActivity extends AppCompatActivity {
         popup.getMenu().add(0, 1, 0, "Profile");
         popup.getMenu().add(0, 2, 1, "Manage Schedule");
         popup.getMenu().add(0, 3, 2, "Schedule History");
-        popup.getMenu().add(0, 4, 3, "Log Out");
+        popup.getMenu().add(0, 4, 3, "Patient Management"); // New Button
+        popup.getMenu().add(0, 5, 4, "Log Out");
 
         popup.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
                 case 1: startActivity(new Intent(this, DoctorProfileActivity.class)); return true;
                 case 2: startActivity(new Intent(this, ManageScheduleActivity.class)); return true;
                 case 3: startActivity(new Intent(this, ViewScheduleHistoryActivity.class)); return true;
-                case 4: logoutUser(); return true;
+                case 4: startActivity(new Intent(this, PatientManagementActivity.class)); return true;
+                case 5: logoutUser(); return true;
                 default: return false;
             }
         });

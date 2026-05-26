@@ -14,6 +14,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Medisync">
 
+        <activity
+            android:name=".doctor.EditPatientByDoctorActivity"
+            android:exported="false" />
+        <activity
+            android:name=".doctor.PatientManagementActivity"
+            android:exported="false" />
+
         <!-- New Update Page -->
         <activity
             android:name=".doctor.UpdateMedicineActivity"
