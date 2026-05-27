@@ -2,6 +2,7 @@ package com.example.medisync.doctor;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -38,7 +39,7 @@ public class PatientManagementActivity extends AppCompatActivity implements Pati
         adapter = new PatientAdapter(patientList, this);
         rvPatients.setAdapter(adapter);
 
-        ImageButton btnBack = findViewById(R.id.btnBack);
+        Button btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
         fetchPatients();

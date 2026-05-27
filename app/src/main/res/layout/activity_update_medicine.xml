@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F7FA">
+    android:fitsSystemWindows="true">
 
     <!-- Header -->
     <LinearLayout
@@ -15,13 +15,18 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBack"
-            android:layout_width="30dp"
+            android:layout_width="40dp"
             android:layout_height="30dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Back"
-            android:src="@drawable/ic_back_arrow_white" />
+            android:backgroundTint="#1d5373"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/ic_back_arrow_white"
+            app:iconGravity="textStart"
+            app:iconSize="20dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:iconPadding="0dp"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -63,7 +68,7 @@
                     android:id="@+id/etMedicineName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Medicine Name"
+                    android:hint="Medicine Name (Net Weight/Total)"
                     android:inputType="text"
                     android:layout_marginBottom="12dp"/>
 
@@ -78,7 +83,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="Amount"
+                        android:hint="Intake Amount"
                         android:inputType="numberDecimal"/>
                     <Spinner
                         android:id="@+id/spinnerUnit"

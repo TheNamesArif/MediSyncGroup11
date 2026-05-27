@@ -91,6 +91,18 @@ public class DoctorHomeActivity extends AppCompatActivity {
         imgBtnMenu.setOnClickListener(this::showDropdownMenu);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        try {
+            updateTimetable(Calendar.getInstance());     // reload data
+            Toast.makeText(this, "Refreshed Data", Toast.LENGTH_SHORT).show();
+        } catch (Exception e){
+            Toast.makeText(this, "Error Refreshing", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
     private void updateTimetable(Calendar calendar) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
         tvDateTitle.setText("Schedule For " + sdf.format(calendar.getTime()));
@@ -142,9 +154,9 @@ public class DoctorHomeActivity extends AppCompatActivity {
     private void showDropdownMenu(View anchor) {
         PopupMenu popup = new PopupMenu(this, anchor);
         popup.getMenu().add(0, 1, 0, "Profile");
-        popup.getMenu().add(0, 2, 1, "Manage Schedule");
-        popup.getMenu().add(0, 3, 2, "Schedule History");
-        popup.getMenu().add(0, 4, 3, "Patient Management"); // New Button
+        popup.getMenu().add(0, 2, 1, "Create Schedule");
+        popup.getMenu().add(0, 3, 2, "Manage Schedule");
+        popup.getMenu().add(0, 4, 3, "Patient Management");
         popup.getMenu().add(0, 5, 4, "Log Out");
 
         popup.setOnMenuItemClickListener(item -> {

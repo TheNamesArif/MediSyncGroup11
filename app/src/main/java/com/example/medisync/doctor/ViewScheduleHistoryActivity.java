@@ -2,6 +2,7 @@ package com.example.medisync.doctor;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
@@ -55,7 +56,7 @@ public class ViewScheduleHistoryActivity extends AppCompatActivity implements Me
 
         initializeViews();
 
-        ImageButton btnBack = findViewById(R.id.btnBack);
+        Button btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
         loadPatients();

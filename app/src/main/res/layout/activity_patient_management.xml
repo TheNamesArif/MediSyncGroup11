@@ -2,28 +2,35 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:background="#F5F5F5">
+    android:fitsSystemWindows="true">
 
     <!-- Header -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#3B7597"
-        android:padding="16dp">
+        android:padding="20dp">
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBack"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_back_white"
-            android:layout_centerVertical="true" />
+            android:layout_width="40dp"
+            android:layout_height="30dp"
+            android:backgroundTint="#1d5373"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/ic_back_arrow_white"
+            app:iconGravity="textStart"
+            app:iconSize="20dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:iconPadding="0dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
+            android:layout_toEndOf="@+id/btnBack"
+            android:layout_marginStart="16dp"
             android:text="Patient Management"
             android:textColor="#FFFFFF"
             android:textSize="20sp"

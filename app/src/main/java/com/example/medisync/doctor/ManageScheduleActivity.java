@@ -73,7 +73,7 @@ public class ManageScheduleActivity extends AppCompatActivity {
 
         initializeViews();
 
-        ImageButton btnBack = findViewById(R.id.btnBack);
+        Button btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
         loadPatients();

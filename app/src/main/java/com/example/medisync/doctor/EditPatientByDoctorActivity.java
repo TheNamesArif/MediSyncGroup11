@@ -3,7 +3,6 @@ package com.example.medisync.doctor;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,8 +17,7 @@ import java.util.Map;
 public class EditPatientByDoctorActivity extends AppCompatActivity {
 
     private EditText etFullName, etAge, etGender;
-    private MaterialButton btnSave;
-    private ImageButton btnBack;
+    private MaterialButton btnSave, btnBack;
     private FirebaseFirestore db;
     private String patientUid;
 

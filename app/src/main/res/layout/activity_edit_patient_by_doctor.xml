@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -12,6 +13,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="20dp"
             android:orientation="vertical">
 
             <!-- Header -->
@@ -27,12 +29,18 @@
                     android:orientation="horizontal"
                     android:padding="20dp">
 
-                    <ImageButton
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnBack"
                         android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_back_white" />
+                        android:layout_height="30dp"
+                        android:backgroundTint="#1d5373"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_back_arrow_white"
+                        app:iconGravity="textStart"
+                        app:iconSize="20dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        app:iconPadding="0dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -60,7 +68,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:padding="18dp">
 
@@ -130,10 +138,10 @@
                         android:layout_marginTop="30dp"
                         android:backgroundTint="#3B7597"
                         android:text="Update Details"
+                        android:textAllCaps="false"
                         android:textColor="#FFFFFF"
                         android:textSize="15sp"
                         android:textStyle="bold"
-                        android:textAllCaps="false"
                         app:cornerRadius="14dp" />
 
                 </LinearLayout>
