@@ -187,6 +187,7 @@ void loop() {
 
   // ── Active alert handling ────────────────────────────
   if (alreadyAlerting) {
+    alertUpdate();
     if (millis() - lastBlink > 300) {
       ledState = !ledState;
       digitalWrite(PIN_LED, ledState);

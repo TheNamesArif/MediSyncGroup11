@@ -7,6 +7,11 @@ DFRobotDFPlayerMini dfPlayer;
 bool _alertActive = false;
 unsigned long _alertStart = 0;
 
+bool _buzzerState       = false;
+unsigned long _lastBeep = 0;
+#define BEEP_ON_MS  300   // beep duration
+#define BEEP_OFF_MS 200   // gap between beeps
+
 void alertInit() {
   pinMode(PIN_BUZZER, OUTPUT);
   pinMode(PIN_LED, OUTPUT);
@@ -25,20 +30,37 @@ void alertInit() {
 }
 
 void alertTrigger() {
-  _alertActive = true;
-  _alertStart = millis();
-  digitalWrite(PIN_LED, HIGH);
-  digitalWrite(PIN_BUZZER, HIGH);
-  dfPlayer.play(1);  // plays 0001.mp3 from SD card
+  _alertActive  = true;
+  _alertStart   = millis();
+  _lastBeep     = millis();
+  _buzzerState  = true;
+  digitalWrite(PIN_BUZZER, HIGH);   // start first beep immediately
+  dfPlayer.play(1);
 }
 
 void alertStop() {
   _alertActive = false;
-  digitalWrite(PIN_LED, LOW);
   digitalWrite(PIN_BUZZER, LOW);
+  digitalWrite(PIN_LED, LOW);
+  _buzzerState = false;
   dfPlayer.stop();
 }
 
 bool alertIsActive() {
   return _alertActive;
+}
+
+// Call this every loop() iteration while alert is active
+void alertUpdate() {
+  if (!_alertActive) return;
+  unsigned long now = millis();
+  if (_buzzerState && now - _lastBeep > BEEP_ON_MS) {
+    digitalWrite(PIN_BUZZER, LOW);
+    _buzzerState = false;
+    _lastBeep    = now;
+  } else if (!_buzzerState && now - _lastBeep > BEEP_OFF_MS) {
+    digitalWrite(PIN_BUZZER, HIGH);
+    _buzzerState = true;
+    _lastBeep    = now;
+  }
 }
