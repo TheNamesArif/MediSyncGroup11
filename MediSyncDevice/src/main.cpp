@@ -25,6 +25,7 @@ bool ledState             = false;
 int  alertMedIndex        = -1;
 int  alertTimeIndex       = -1;
 bool alreadyAlerting      = false;
+bool postDismiss = false;
 
 extern unsigned long _alertStart;   // defined in alert.cpp
 
@@ -108,6 +109,51 @@ bool timesMatch(String current, String intake) {
   // intake  → "10:30 PM"
   return current.substring(0, 5) == intake.substring(0, 5) &&
          current.substring(6)    == intake.substring(6);
+}
+
+// Given a Medicine and current time, find the next upcoming intake time (as "HH:MM AM/PM").
+String getNextIntakeTime(Medicine& med, DateTime now) {
+  if (med.intakeTimes.empty()) return "N/A";
+
+  String currentTimeStr = getCurrentTimeStr(now);
+
+  // Convert "HH:MM AM/PM" to minutes since midnight for comparison
+  auto toMinutes = [](String t) -> int {
+    int h = t.substring(0, 2).toInt();
+    int m = t.substring(3, 5).toInt();
+    String ampm = t.substring(6);
+    if (ampm == "PM" && h != 12) h += 12;
+    if (ampm == "AM" && h == 12) h = 0;
+    return h * 60 + m;
+  };
+
+  int nowMinutes = toMinutes(currentTimeStr);
+  String nextTime = "";
+  int minDiff = 99999;
+
+  // Find the next upcoming time today
+  for (String t : med.intakeTimes) {
+    int tMins = toMinutes(t);
+    int diff = tMins - nowMinutes;
+    if (diff > 0 && diff < minDiff) {
+      minDiff = diff;
+      nextTime = t;
+    }
+  }
+
+  // If none found today, wrap around to earliest time tomorrow
+  if (nextTime == "") {
+    int minMins = 99999;
+    for (String t : med.intakeTimes) {
+      int tMins = toMinutes(t);
+      if (tMins < minMins) {
+        minMins = tMins;
+        nextTime = t;
+      }
+    }
+  }
+
+  return nextTime;
 }
 
 // ─── WiFi ─────────────────────────────────────────────
@@ -203,6 +249,7 @@ void loop() {
           Medicine& m = medicines[alertMedIndex];
           displayMedicine(m.name, m.intakeTimes[alertTimeIndex],
                           m.instruction, m.amount, m.unit);
+          postDismiss = true;   // ← enter post-dismiss state
         }
         delay(500);
       }
@@ -215,16 +262,30 @@ void loop() {
     return;
   }
 
+  // ── Post-dismiss screen ──────────────────────────────
+  if (postDismiss) {
+    if (digitalRead(PIN_BUTTON) == LOW) {
+      delay(50);
+      if (digitalRead(PIN_BUTTON) == LOW) {
+        postDismiss = false;
+        displayClear();
+        Serial.println("Post-dismiss dismissed by button");
+        delay(500);
+      }
+    }
+    return;   // hold here, skip idle updates
+  }
+
   // ── Update clock on LCD row 0 ────────────────────────
   displayTime(currentDTStr);
 
-  // ── Scroll medicines on LCD ──────────────────────────
+  // ── Idle scroll medicines on LCD ──────────────────────
   if (!medicines.empty() && millis() - lastScroll > 5000) {
     lastScroll = millis();
     if (scrollIndex >= (int)medicines.size()) scrollIndex = 0;
     Medicine& m = medicines[scrollIndex];
-    String timeStr = m.intakeTimes.empty() ? "N/A" : m.intakeTimes[0];
-    displayMedicineIdle(m.name, timeStr, scrollIndex + 1, medicines.size());
+    String nextTime = getNextIntakeTime(m, now);   // ← was m.intakeTimes[0]
+    displayMedicineIdle(m.name, nextTime, scrollIndex + 1, medicines.size());
     displayTime(currentDTStr);
     scrollIndex++;
   }
@@ -263,7 +324,7 @@ void loop() {
           alertTimeIndex  = j;
           alreadyAlerting = true;
           alertTrigger();
-          displayAlert(med.name, med.intakeTimes[j]);
+          displayAlert(med.name, med.intakeTimes[j],med.instruction, med.amount, med.unit,currentTimeStr);
           triggered = true;
           break;
         }

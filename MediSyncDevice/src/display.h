@@ -6,7 +6,7 @@ void displayWelcome();
 void displayConnecting();
 void displayTime(String datetime);
 void displayMedicine(String name, String time, String instruction, String amount, String unit);
-void displayAlert(String name, String time);
+void displayAlert(String name, String time, String instruction, String amount, String unit, String currentTime);
 void displayNoMeds();
 void displayFetching();
 void displayError(String msg);

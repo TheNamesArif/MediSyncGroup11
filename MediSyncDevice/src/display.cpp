@@ -34,16 +34,28 @@ void displayMedicine(String name, String time, String instruction, String amount
   lcd.clear();
   lcd.setCursor(0, 0); lcd.print("Med: "); lcd.print(name);
   lcd.setCursor(0, 1); lcd.print("Time: "); lcd.print(time);
-  lcd.setCursor(0, 2); lcd.print(instruction);
-  lcd.setCursor(0, 3); lcd.print(amount); lcd.print(" "); lcd.print(unit);
+  lcd.setCursor(0, 2); lcd.print(instruction); lcd.print("  "); lcd.print(amount); lcd.print(" "); lcd.print(unit);
+  lcd.setCursor(0, 3); lcd.print("Press again if taken");
 }
 
-void displayAlert(String name, String time) {
+void displayAlert(String name, String time, String instruction, String amount, String unit, String currentTime) {
   lcd.clear();
-  lcd.setCursor(4, 0); lcd.print("!! ALERT !!");
-  lcd.setCursor(0, 1); lcd.print("Take: "); lcd.print(name);
-  lcd.setCursor(0, 2); lcd.print("Time: "); lcd.print(time);
-  lcd.setCursor(0, 3); lcd.print("Press btn to confirm");
+
+  // Row 0: "!! ALERT !!  14:32"
+  String row0 = "!! ALERT !!  " + currentTime.substring(0, 5); // "HH:MM" only
+  lcd.setCursor(0, 0); lcd.print(row0);
+
+  // Row 1: medicine name (truncated to 20 chars)
+  String row1 = "Take: " + name;
+  lcd.setCursor(0, 1); lcd.print(row1.substring(0, 20));
+
+  // Row 2: instruction | amount+unit (truncated to fit)
+  String row2 = instruction + "  " + amount + unit;
+  if (row2.length() > 20) row2 = row2.substring(0, 20);
+  lcd.setCursor(0, 2); lcd.print(row2);
+
+  // Row 3: fixed prompt
+  lcd.setCursor(0, 3); lcd.print("Press btn to dismiss");
 }
 
 void displayNoMeds() {
@@ -70,8 +82,7 @@ void displayClear() {
 
 void displayMedicineIdle(String name, String time, int current, int total) {
   lcd.clear();
-  lcd.setCursor(0, 0); // row 0 kept for time, skip it
   lcd.setCursor(0, 1); lcd.print("Med "); lcd.print(current); lcd.print("/"); lcd.print(total); lcd.print(": "); lcd.print(name);
-  lcd.setCursor(0, 2); lcd.print("Time: "); lcd.print(time);
-  lcd.setCursor(0, 3); lcd.print("System OK");
+  lcd.setCursor(0, 2); lcd.print("Next Intake:"); 
+  lcd.setCursor(0, 3); lcd.print(time);
 }
