@@ -1,8 +1,8 @@
 #pragma once
 
 // ─── WiFi ────────────────────────────────────────────
-#define WIFI_SSID       "ctradhiah"
-#define WIFI_PASSWORD   "ctjune78"
+#define WIFI_SSID       "WIFI KSJ_2.4G"
+#define WIFI_PASSWORD   "Aishh06_"
 
 // ─── Firebase ────────────────────────────────────────
 #define FIREBASE_API_KEY   "AIzaSyBsVIf1aIYb3Sey3etQ7XJwo3uCllVeXFU"
