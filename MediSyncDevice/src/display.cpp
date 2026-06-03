@@ -11,8 +11,8 @@ void displayInit() {
 void displayWelcome() {
   lcd.clear();
   lcd.setCursor(3, 0); lcd.print("MediSync");
-  lcd.setCursor(0, 2); lcd.print("Initializing");
-  lcd.setCursor(0, 3); lcd.print("Please wait...");
+  lcd.setCursor(4, 1); lcd.print("Initializing");
+  lcd.setCursor(2, 3); lcd.print("Please wait...");
 }
 
 void displayConnecting() {

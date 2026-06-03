@@ -16,7 +16,6 @@ RTC_DS1307 rtc;
 
 // ─── State ────────────────────────────────────────────
 std::vector<Medicine> medicines;
-std::vector<Medicine*> activeMedicines;  // pointers into medicines
 
 unsigned long lastFetch   = 0;
 unsigned long lastCheck   = 0;
@@ -157,13 +156,6 @@ String getNextIntakeTime(Medicine& med, DateTime now) {
   return nextTime;
 }
 
-void rebuildActiveMedicines(std::vector<Medicine>& all, std::vector<Medicine*>& active, DateTime now) {
-  active.clear();
-  for (Medicine& m : all) {
-    if (!isExpired(m, now)) active.push_back(&m);
-  }
-}
-
 // ─── WiFi ─────────────────────────────────────────────
 
 void connectWiFi() {
@@ -223,7 +215,6 @@ void setup() {
   // Initial Firestore fetch
   displayFetching();
   if (firebaseFetch(medicines)) {
-    rebuildActiveMedicines(medicines, activeMedicines, rtc.now());
     Serial.println("Fetched " + String(medicines.size()) + " medicine(s)");
   } else {
     Serial.println("Initial fetch failed");
@@ -289,23 +280,21 @@ void loop() {
   displayTime(currentDTStr);
 
   // ── Idle scroll medicines on LCD ──────────────────────
-  if (!activeMedicines.empty() && millis() - lastScroll > 5000) {
+  if (!medicines.empty() && millis() - lastScroll > 5000) {
     lastScroll = millis();
-    if (scrollIndex >= (int)activeMedicines.size()) scrollIndex = 0;
-    Medicine* m = activeMedicines[scrollIndex];
-    String nextTime = getNextIntakeTime(*m, now);
-    displayMedicineIdle(m->name, nextTime, scrollIndex + 1, activeMedicines.size());
+    if (scrollIndex >= (int)medicines.size()) scrollIndex = 0;
+    Medicine& m = medicines[scrollIndex];
+    String nextTime = getNextIntakeTime(m, now);   // ← was m.intakeTimes[0]
+    displayMedicineIdle(m.name, nextTime, scrollIndex + 1, medicines.size());
     displayTime(currentDTStr);
     scrollIndex++;
   }
 
   // ── Re-fetch Firestore (non-blocking check) ──────────
   if (millis() - lastFetch > FETCH_INTERVAL_MS) {
-    lastFetch = millis();
+    lastFetch = millis();    // ← reset BEFORE fetch so it doesn't block check
     displayFetching();
     if (firebaseFetch(medicines)) {
-      rebuildActiveMedicines(medicines, activeMedicines, rtc.now());
-      scrollIndex = 0;
       Serial.println("Re-fetched: " + String(medicines.size()) + " medicine(s)");
     } else {
       Serial.println("Re-fetch failed, using cached data");
@@ -315,7 +304,7 @@ void loop() {
 
   // ── Check due medicines (RTC-driven, independent) ────
   if (millis() - lastCheck > CHECK_INTERVAL_MS) {
-    lastCheck = millis();
+    lastCheck = millis();    // ← reset BEFORE logic
     Serial.println("Checking meds at: " + currentTimeStr);
 
     bool triggered = false;
@@ -335,7 +324,7 @@ void loop() {
           alertTimeIndex  = j;
           alreadyAlerting = true;
           alertTrigger();
-          displayAlert(med.name, med.intakeTimes[j], med.instruction, med.amount, med.unit, currentTimeStr);
+          displayAlert(med.name, med.intakeTimes[j],med.instruction, med.amount, med.unit,currentTimeStr);
           triggered = true;
           break;
         }
@@ -343,6 +332,22 @@ void loop() {
       if (triggered) break;
     }
   }
- 
+
+  // ── Re-fetch Firestore (only if WiFi connected) ──────
+  if (millis() - lastFetch > FETCH_INTERVAL_MS) {
+    lastFetch = millis();
+    if (WiFi.status() == WL_CONNECTED) {    // ← add this check
+      displayFetching();
+      if (firebaseFetch(medicines)) {
+        Serial.println("Re-fetched: " + String(medicines.size()) + " medicine(s)");
+      } else {
+        Serial.println("Re-fetch failed, using cached data");
+      }
+      displayClear();
+    } else {
+      Serial.println("WiFi down — skipping fetch, using cached data");
+    }
+  }
+
   delay(500);
 }
