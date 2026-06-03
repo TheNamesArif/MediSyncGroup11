@@ -10,15 +10,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.medisync.R;
 import com.example.medisync.model.Medicine;
+import com.example.medisync.model.MedicineIntake;
 
 import java.util.List;
 
 public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHolder> {
 
-    private List<Medicine> medicineList;
+    private List<MedicineIntake> intakeList;
+    private OnIntakeClickListener listener;
 
-    public MedicineAdapter(List<Medicine> medicineList) {
-        this.medicineList = medicineList;
+    public interface OnIntakeClickListener {
+        void onIntakeClick(MedicineIntake intake);
+    }
+
+    public MedicineAdapter(List<MedicineIntake> intakeList, OnIntakeClickListener listener) {
+        this.intakeList = intakeList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -30,7 +37,8 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Medicine medicine = medicineList.get(position);
+        MedicineIntake intake = intakeList.get(position);
+        Medicine medicine = intake.getMedicine();
         
         // 1. Set Patient Name (Show if it's for the Doctor)
         if (medicine.getPatientName() != null && !medicine.getPatientName().equals("You")) {
@@ -40,23 +48,14 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
             holder.tvPatientName.setVisibility(View.GONE);
         }
 
-        // 2. Basic Info
+        // 2. Set Intake Time as Primary
+        holder.tvIntakeTimePrimary.setText(intake.getIntakeTime());
+
+        // 3. Basic Info (Medicine Name is now secondary)
         holder.tvMedName.setText(medicine.getName());
         String amountText = medicine.getAmount() + " " + (medicine.getUnit() != null ? medicine.getUnit() : "");
         holder.tvMedAmount.setText(amountText);
         holder.tvMedInstruction.setText(medicine.getInstruction());
-        
-        // 3. Intake Times
-        if (medicine.getIntakeTimes() != null && !medicine.getIntakeTimes().isEmpty()) {
-            StringBuilder timesBuilder = new StringBuilder("Times: ");
-            for (int i = 0; i < medicine.getIntakeTimes().size(); i++) {
-                timesBuilder.append(medicine.getIntakeTimes().get(i));
-                if (i < medicine.getIntakeTimes().size() - 1) timesBuilder.append(", ");
-            }
-            holder.tvIntakeTimes.setText(timesBuilder.toString());
-        } else {
-            holder.tvIntakeTimes.setText("No Intake Times Set");
-        }
 
         // 4. Status Logic
         String status = medicine.getStatus() != null ? medicine.getStatus().toUpperCase() : "PENDING";
@@ -69,24 +68,30 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
         } else {
             holder.tvStatus.setBackgroundResource(R.drawable.bg_card_blue);
         }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onIntakeClick(intake);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return medicineList.size();
+        return intakeList.size();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvMedName, tvMedAmount, tvMedInstruction, tvStatus, tvPatientName, tvIntakeTimes;
+        TextView tvMedName, tvMedAmount, tvMedInstruction, tvStatus, tvPatientName, tvIntakeTimePrimary;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvPatientName = itemView.findViewById(R.id.tvPatientName);
+            tvIntakeTimePrimary = itemView.findViewById(R.id.tvIntakeTimePrimary);
             tvMedName = itemView.findViewById(R.id.tvMedName);
             tvMedAmount = itemView.findViewById(R.id.tvMedAmount);
             tvMedInstruction = itemView.findViewById(R.id.tvMedInstruction);
             tvStatus = itemView.findViewById(R.id.tvStatus);
-            tvIntakeTimes = itemView.findViewById(R.id.tvIntakeTimes);
         }
     }
 }

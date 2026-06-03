@@ -21,6 +21,7 @@ import com.example.medisync.R;
 import com.example.medisync.adapter.MedicineAdapter;
 import com.example.medisync.auth.LoginActivity;
 import com.example.medisync.model.Medicine;
+import com.example.medisync.model.MedicineIntake;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -35,13 +36,14 @@ import java.util.Locale;
 import devs.mulham.horizontalcalendar.HorizontalCalendar;
 import devs.mulham.horizontalcalendar.utils.HorizontalCalendarListener;
 
-public class DoctorHomeActivity extends AppCompatActivity {
+public class DoctorHomeActivity extends AppCompatActivity implements MedicineAdapter.OnIntakeClickListener {
 
     private TextView tvDateTitle;
     private MedicineAdapter adapter;
-    private final List<Medicine> medicineList = new ArrayList<>();
+    private final List<MedicineIntake> intakeList = new ArrayList<>();
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +64,9 @@ public class DoctorHomeActivity extends AppCompatActivity {
         tvDateTitle = findViewById(R.id.tvDateTitle);
         RecyclerView rvSchedule = findViewById(R.id.rvSchedule);
         rvSchedule.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new MedicineAdapter(medicineList);
+        
+        // Fix: Pass 'this' as the second argument (OnIntakeClickListener)
+        adapter = new MedicineAdapter(intakeList, this);
         rvSchedule.setAdapter(adapter);
 
         // Setup Calendar
@@ -96,11 +100,15 @@ public class DoctorHomeActivity extends AppCompatActivity {
         super.onResume();
         try {
             updateTimetable(Calendar.getInstance());     // reload data
-            Toast.makeText(this, "Refreshed Data", Toast.LENGTH_SHORT).show();
         } catch (Exception e){
             Toast.makeText(this, "Error Refreshing", Toast.LENGTH_SHORT).show();
         }
+    }
 
+    @Override
+    public void onIntakeClick(MedicineIntake intake) {
+        // Doctors can see a quick summary or open details
+        Toast.makeText(this, "Medicine: " + intake.getMedicine().getName() + " for " + intake.getMedicine().getPatientName(), Toast.LENGTH_SHORT).show();
     }
 
     private void updateTimetable(Calendar calendar) {
@@ -125,24 +133,52 @@ public class DoctorHomeActivity extends AppCompatActivity {
                 .whereLessThanOrEqualTo("startDate", targetEnd)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    medicineList.clear();
+                    intakeList.clear();
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Date rangeEndDate = doc.getDate("endDate");
                         
                         if (rangeEndDate != null && !rangeEndDate.before(targetStart)) {
-                            medicineList.add(new Medicine(
+                            // Safe casting for intakeTimes
+                            Object intakeTimesObj = doc.get("intakeTimes");
+                            List<String> intakeTimes = new ArrayList<>();
+                            if (intakeTimesObj instanceof List<?>) {
+                                for (Object item : (List<?>) intakeTimesObj) {
+                                    if (item instanceof String) intakeTimes.add((String) item);
+                                }
+                            }
+
+                            Medicine medicine = new Medicine(
                                     doc.getId(),
                                     doc.getString("name"),
                                     doc.getString("amount"),
                                     doc.getString("unit"),
                                     doc.getString("instruction"),
-                                    (List<String>) doc.get("intakeTimes"),
+                                    intakeTimes,
                                     doc.getString("status"),
                                     doc.getString("patientName"),
                                     doc.getString("patientUid")
-                            ));
+                            );
+
+                            // Flatten intake times for Doctor's view
+                            if (!intakeTimes.isEmpty()) {
+                                for (String time : intakeTimes) {
+                                    intakeList.add(new MedicineIntake(medicine, time));
+                                }
+                            }
                         }
                     }
+
+                    // Modern sorting logic
+                    intakeList.sort((o1, o2) -> {
+                        try {
+                            Date t1 = timeFormat.parse(o1.getIntakeTime());
+                            Date t2 = timeFormat.parse(o2.getIntakeTime());
+                            return (t1 != null && t2 != null) ? t1.compareTo(t2) : 0;
+                        } catch (Exception e) {
+                            return 0;
+                        }
+                    });
+
                     adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
@@ -160,14 +196,27 @@ public class DoctorHomeActivity extends AppCompatActivity {
         popup.getMenu().add(0, 5, 4, "Log Out");
 
         popup.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case 1: startActivity(new Intent(this, DoctorProfileActivity.class)); return true;
-                case 2: startActivity(new Intent(this, ManageScheduleActivity.class)); return true;
-                case 3: startActivity(new Intent(this, ViewScheduleHistoryActivity.class)); return true;
-                case 4: startActivity(new Intent(this, PatientManagementActivity.class)); return true;
-                case 5: logoutUser(); return true;
-                default: return false;
+            int id = item.getItemId();
+            if (id == 1) {
+                startActivity(new Intent(this, DoctorProfileActivity.class));
+                return true;
+            } else if (id == 2) {
+                // Fixed: Uncommented and linked to ManageScheduleActivity
+                startActivity(new Intent(this, ManageScheduleActivity.class));
+                return true;
+            } else if (id == 3) {
+                // Fixed: Uncommented and linked to ViewScheduleHistoryActivity
+                startActivity(new Intent(this, ViewScheduleHistoryActivity.class));
+                return true;
+            } else if (id == 4) {
+                // Fixed: Uncommented and linked to PatientManagementActivity
+                startActivity(new Intent(this, PatientManagementActivity.class));
+                return true;
+            } else if (id == 5) {
+                logoutUser();
+                return true;
             }
+            return false;
         });
         popup.show();
     }
