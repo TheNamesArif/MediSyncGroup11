@@ -21,6 +21,7 @@ import com.example.medisync.R;
 import com.example.medisync.adapter.MedicineAdapter;
 import com.example.medisync.auth.LoginActivity;
 import com.example.medisync.model.Medicine;
+import com.example.medisync.model.MedicineIntake;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -28,6 +29,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -35,13 +37,15 @@ import java.util.Locale;
 import devs.mulham.horizontalcalendar.HorizontalCalendar;
 import devs.mulham.horizontalcalendar.utils.HorizontalCalendarListener;
 
-public class PatientHomeActivity extends AppCompatActivity {
+public class PatientHomeActivity extends AppCompatActivity implements MedicineAdapter.OnIntakeClickListener {
 
     private TextView tvDateTitle;
     private MedicineAdapter adapter;
-    private final List<Medicine> medicineList = new ArrayList<>();
+    private final List<MedicineIntake> intakeList = new ArrayList<>();
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    
+    private final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,10 +66,19 @@ public class PatientHomeActivity extends AppCompatActivity {
         tvDateTitle = findViewById(R.id.tvDateTitle);
         RecyclerView rvSchedule = findViewById(R.id.rvSchedule);
         rvSchedule.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new MedicineAdapter(medicineList);
+        
+        // Correctly pass 'this' as the click listener
+        adapter = new MedicineAdapter(intakeList, this);
         rvSchedule.setAdapter(adapter);
 
-        // Setup Horizontal Calendar
+        setupCalendar();
+
+        // Menu button (Handles Profile and Logout)
+        ImageButton imgBtnMenu = findViewById(R.id.imgBtnMenu);
+        imgBtnMenu.setOnClickListener(this::showDropdownMenu);
+    }
+
+    private void setupCalendar() {
         Calendar startDate = Calendar.getInstance();
         startDate.add(Calendar.MONTH, -1);
         Calendar endDate = Calendar.getInstance();
@@ -85,10 +98,6 @@ public class PatientHomeActivity extends AppCompatActivity {
 
         // Initial setup for today
         updateTimetable(Calendar.getInstance());
-
-        // Menu button (Handles Profile and Logout)
-        ImageButton imgBtnMenu = findViewById(R.id.imgBtnMenu);
-        imgBtnMenu.setOnClickListener(this::showDropdownMenu);
     }
 
     private void updateTimetable(Calendar calendar) {
@@ -117,14 +126,13 @@ public class PatientHomeActivity extends AppCompatActivity {
                 .whereLessThanOrEqualTo("startDate", targetEndOfDay)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    medicineList.clear();
+                    intakeList.clear();
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Date rangeEndDate = doc.getDate("endDate");
                         
                         // Local Check: ensure the schedule has not ended before the selected date
                         if (rangeEndDate != null && !rangeEndDate.before(targetStartOfDay)) {
-                            // FIXED: Constructor now uses 9 parameters including patientUid
-                            medicineList.add(new Medicine(
+                            Medicine medicine = new Medicine(
                                     doc.getId(),
                                     doc.getString("name"),
                                     doc.getString("amount"),
@@ -134,15 +142,45 @@ public class PatientHomeActivity extends AppCompatActivity {
                                     doc.getString("status"),
                                     "You",
                                     mAuth.getUid()
-                            ));
+                            );
+
+                            // Create a card for each intake time
+                            List<String> times = medicine.getIntakeTimes();
+                            if (times != null) {
+                                for (String time : times) {
+                                    intakeList.add(new MedicineIntake(medicine, time));
+                                }
+                            }
                         }
                     }
+
+                    // Chronological Sorting: Order cards by time
+                    Collections.sort(intakeList, (o1, o2) -> {
+                        try {
+                            Date d1 = timeFormat.parse(o1.getIntakeTime());
+                            Date d2 = timeFormat.parse(o2.getIntakeTime());
+                            if (d1 == null || d2 == null) return 0;
+                            return d1.compareTo(d2);
+                        } catch (Exception e) {
+                            return 0;
+                        }
+                    });
+
                     adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
                     Log.e("FirestoreError", "Error loading schedule", e);
                     Toast.makeText(this, "Error Loading Schedule", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    @Override
+    public void onIntakeClick(MedicineIntake intake) {
+        // Handle marking as taken or viewing status
+        Intent intent = new Intent(this, TakenStatusActivity.class);
+        intent.putExtra("medicineId", intake.getMedicine().getDocumentId());
+        intent.putExtra("intakeTime", intake.getIntakeTime());
+        startActivity(intent);
     }
 
     private void showDropdownMenu(View anchor) {
