@@ -19,7 +19,7 @@ public class TakenStatusActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private String medicineId, patientUid, intakeTime, currentStatus, patientName;
-    private String medName, medAmount, medInstruction;
+    private String medName, medAmount, medInstruction, medRemarks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +44,7 @@ public class TakenStatusActivity extends AppCompatActivity {
         medName        = getIntent().getStringExtra("medName");
         medAmount      = getIntent().getStringExtra("medAmount");
         medInstruction = getIntent().getStringExtra("medInstruction");
+        medRemarks     = getIntent().getStringExtra("medRemarks");
 
         // --- Card views (from item_medicine_dashboard.xml via <include>) ---
         View medicineCard = findViewById(R.id.medicineCard);
@@ -53,6 +54,7 @@ public class TakenStatusActivity extends AppCompatActivity {
         TextView tvMedAmount         = findViewById(R.id.tvMedAmount);
         TextView tvMedInstruction    = findViewById(R.id.tvMedInstruction);
         TextView tvStatus            = findViewById(R.id.tvStatus);
+        TextView tvRemarks           = findViewById(R.id.tvRemarks);
 
         // Populate card fields
         if (tvPatientName != null && patientName != null) {
@@ -74,6 +76,11 @@ public class TakenStatusActivity extends AppCompatActivity {
 
         if (tvStatus != null)
             setStatusBadge(tvStatus, currentStatus);
+
+        if (tvRemarks != null && medRemarks != null && !medRemarks.isEmpty()) {
+            tvRemarks.setText("Remarks: " + medRemarks);
+            tvRemarks.setVisibility(View.VISIBLE);
+        }
 
         // --- Action buttons ---
         Button btnMarkTaken   = findViewById(R.id.btnMarkTaken);

@@ -27,6 +27,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -107,15 +108,27 @@ public class ViewScheduleHistoryActivity extends AppCompatActivity implements Me
                 .addOnSuccessListener(querySnapshot -> {
                     medicineList.clear();
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Object intakeTimesObj = doc.get("intakeTimes");
+                        Map<String, String> intakeMap = new HashMap<>();
+                        if (intakeTimesObj instanceof Map<?, ?>) {
+                            Map<?, ?> rawMap = (Map<?, ?>) intakeTimesObj;
+                            for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                                if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
+                                    intakeMap.put((String) entry.getKey(), (String) entry.getValue());
+                                }
+                            }
+                        }
+
                         medicineList.add(new Medicine(
                                 doc.getId(),
                                 doc.getString("name"),
                                 doc.getString("amount"),
                                 doc.getString("unit"),
                                 doc.getString("instruction"),
-                                (Map<String, String>) doc.get("intakeTimes"),
+                                intakeMap,
                                 doc.getString("patientName"),
-                                patientId
+                                patientId,
+                                doc.getString("remarks")
                         ));
                     }
                     adapter.notifyDataSetChanged();
@@ -133,7 +146,7 @@ public class ViewScheduleHistoryActivity extends AppCompatActivity implements Me
                 .setMessage("Name: " + medicine.getName() + "\n" +
                            "Amount: " + medicine.getAmount() + " " + medicine.getUnit() + "\n" +
                            "Instruction: " + medicine.getInstruction() + "\n" +
-                           "Status: " + medicine.getStatus())
+                           "Remarks: " + medicine.getRemarks())
                 .setPositiveButton("Close", null)
                 .show();
     }

@@ -155,7 +155,8 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
                                     doc.getString("instruction"),
                                     intakeMap,
                                     "You",
-                                    mAuth.getUid()
+                                    mAuth.getUid(),
+                                    doc.getString("remarks")
                             );
 
                             // Each intake time is now a key in the Map
@@ -196,6 +197,7 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
         intent.putExtra("medName", intake.getMedicine().getName());
         intent.putExtra("medAmount", intake.getMedicine().getAmount() + " " + intake.getMedicine().getUnit());
         intent.putExtra("medInstruction", intake.getMedicine().getInstruction());
+        intent.putExtra("medRemarks", intake.getMedicine().getRemarks());
         startActivity(intent);
     }
 

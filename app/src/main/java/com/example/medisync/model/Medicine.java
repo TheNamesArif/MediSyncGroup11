@@ -12,11 +12,12 @@ public class Medicine {
     private String patientName;
     private String patientUid;
     private String status; // Kept for overall status if needed, or backward compatibility
+    private String remarks;
 
     public Medicine() {}
 
     public Medicine(String documentId, String name, String amount, String unit, String instruction,
-                    Map<String, String> intakeTimes, String patientName, String patientUid) {
+                    Map<String, String> intakeTimes, String patientName, String patientUid, String remarks) {
         this.documentId = documentId;
         this.name = name;
         this.amount = amount;
@@ -25,6 +26,7 @@ public class Medicine {
         this.intakeTimes = intakeTimes;
         this.patientName = patientName;
         this.patientUid = patientUid;
+        this.remarks = remarks;
     }
 
     public String getDocumentId() { return documentId; }
@@ -37,4 +39,5 @@ public class Medicine {
     public String getPatientUid() { return patientUid; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getRemarks() { return remarks; }
 }

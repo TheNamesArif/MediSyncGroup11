@@ -120,6 +120,7 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
         intent.putExtra("medName", intake.getMedicine().getName());
         intent.putExtra("medAmount", intake.getMedicine().getAmount() + " " + intake.getMedicine().getUnit());
         intent.putExtra("medInstruction", intake.getMedicine().getInstruction());
+        intent.putExtra("medRemarks", intake.getMedicine().getRemarks());
         startActivity(intent);
     }
 
@@ -170,7 +171,8 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
                                     doc.getString("instruction"),
                                     intakeMap,
                                     doc.getString("patientName"),
-                                    doc.getString("patientUid")
+                                    doc.getString("patientUid"),
+                                    doc.getString("remarks")
                             );
 
                             // Flatten intake times for Doctor's view
