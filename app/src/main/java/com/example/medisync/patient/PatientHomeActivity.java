@@ -31,8 +31,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import devs.mulham.horizontalcalendar.HorizontalCalendar;
 import devs.mulham.horizontalcalendar.utils.HorizontalCalendarListener;
@@ -44,7 +46,7 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
     private final List<MedicineIntake> intakeList = new ArrayList<>();
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
-    
+
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
     @Override
@@ -52,7 +54,7 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_patient_home);
-        
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -62,20 +64,28 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // Initialize UI
         tvDateTitle = findViewById(R.id.tvDateTitle);
         RecyclerView rvSchedule = findViewById(R.id.rvSchedule);
         rvSchedule.setLayoutManager(new LinearLayoutManager(this));
-        
-        // Correctly pass 'this' as the click listener
+
         adapter = new MedicineAdapter(intakeList, this);
         rvSchedule.setAdapter(adapter);
 
         setupCalendar();
 
-        // Menu button (Handles Profile and Logout)
+        // Menu button
         ImageButton imgBtnMenu = findViewById(R.id.imgBtnMenu);
         imgBtnMenu.setOnClickListener(this::showDropdownMenu);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        try {
+            updateTimetable(Calendar.getInstance());     // reload data
+        } catch (Exception e){
+            Toast.makeText(this, "Error Refreshing", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupCalendar() {
@@ -96,7 +106,6 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
             }
         });
 
-        // Initial setup for today
         updateTimetable(Calendar.getInstance());
     }
 
@@ -109,19 +118,14 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
     private void fetchSchedulesFromFirebase(Date selectedDate) {
         if (mAuth.getUid() == null) return;
 
-        // Strip time from selected date for accurate range comparison
         Calendar cal = Calendar.getInstance();
         cal.setTime(selectedDate);
         cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0);
         Date targetStartOfDay = cal.getTime();
 
-        cal.set(Calendar.HOUR_OF_DAY, 23);
-        cal.set(Calendar.MINUTE, 59);
-        cal.set(Calendar.SECOND, 59);
-        cal.set(Calendar.MILLISECOND, 999);
+        cal.set(Calendar.HOUR_OF_DAY, 23); cal.set(Calendar.MINUTE, 59); cal.set(Calendar.SECOND, 59); cal.set(Calendar.MILLISECOND, 999);
         Date targetEndOfDay = cal.getTime();
 
-        // Query the patient's specific medicines where selected date falls within range
         db.collection("users").document(mAuth.getUid()).collection("medicines")
                 .whereLessThanOrEqualTo("startDate", targetEndOfDay)
                 .get()
@@ -129,32 +133,39 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
                     intakeList.clear();
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Date rangeEndDate = doc.getDate("endDate");
-                        
-                        // Local Check: ensure the schedule has not ended before the selected date
+
                         if (rangeEndDate != null && !rangeEndDate.before(targetStartOfDay)) {
+                            // Safe casting for intakeTimes Map
+                            Object intakeTimesObj = doc.get("intakeTimes");
+                            Map<String, String> intakeMap = new HashMap<>();
+                            if (intakeTimesObj instanceof Map<?, ?>) {
+                                Map<?, ?> rawMap = (Map<?, ?>) intakeTimesObj;
+                                for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                                    if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
+                                        intakeMap.put((String) entry.getKey(), (String) entry.getValue());
+                                    }
+                                }
+                            }
+
                             Medicine medicine = new Medicine(
                                     doc.getId(),
                                     doc.getString("name"),
                                     doc.getString("amount"),
                                     doc.getString("unit"),
                                     doc.getString("instruction"),
-                                    (List<String>) doc.get("intakeTimes"),
-                                    doc.getString("status"),
+                                    intakeMap,
                                     "You",
                                     mAuth.getUid()
                             );
 
-                            // Create a card for each intake time
-                            List<String> times = medicine.getIntakeTimes();
-                            if (times != null) {
-                                for (String time : times) {
-                                    intakeList.add(new MedicineIntake(medicine, time));
-                                }
+                            // Each intake time is now a key in the Map
+                            for (Map.Entry<String, String> entry : intakeMap.entrySet()) {
+                                intakeList.add(new MedicineIntake(medicine, entry.getKey(), entry.getValue()));
                             }
                         }
                     }
 
-                    // Chronological Sorting: Order cards by time
+                    // Sort chronologically by time
                     Collections.sort(intakeList, (o1, o2) -> {
                         try {
                             Date d1 = timeFormat.parse(o1.getIntakeTime());
@@ -176,10 +187,15 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
 
     @Override
     public void onIntakeClick(MedicineIntake intake) {
-        // Handle marking as taken or viewing status
         Intent intent = new Intent(this, TakenStatusActivity.class);
         intent.putExtra("medicineId", intake.getMedicine().getDocumentId());
+        intent.putExtra("patientUid", intake.getMedicine().getPatientUid());
+        intent.putExtra("patientName", intake.getMedicine().getPatientName());
         intent.putExtra("intakeTime", intake.getIntakeTime());
+        intent.putExtra("currentStatus", intake.getStatus());
+        intent.putExtra("medName", intake.getMedicine().getName());
+        intent.putExtra("medAmount", intake.getMedicine().getAmount() + " " + intake.getMedicine().getUnit());
+        intent.putExtra("medInstruction", intake.getMedicine().getInstruction());
         startActivity(intent);
     }
 

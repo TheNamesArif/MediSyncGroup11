@@ -28,6 +28,7 @@ import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ViewScheduleHistoryActivity extends AppCompatActivity implements MedicineHistoryAdapter.OnMedicineActionListener {
 
@@ -106,17 +107,15 @@ public class ViewScheduleHistoryActivity extends AppCompatActivity implements Me
                 .addOnSuccessListener(querySnapshot -> {
                     medicineList.clear();
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        // FIXED: Passing all 9 parameters to the Medicine constructor
                         medicineList.add(new Medicine(
                                 doc.getId(),
                                 doc.getString("name"),
                                 doc.getString("amount"),
                                 doc.getString("unit"),
                                 doc.getString("instruction"),
-                                (List<String>) doc.get("intakeTimes"),
-                                doc.getString("status"),
+                                (Map<String, String>) doc.get("intakeTimes"),
                                 doc.getString("patientName"),
-                                patientId // 9th argument: patientUid
+                                patientId
                         ));
                     }
                     adapter.notifyDataSetChanged();

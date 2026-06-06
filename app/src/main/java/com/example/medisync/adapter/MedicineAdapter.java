@@ -39,7 +39,7 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         MedicineIntake intake = intakeList.get(position);
         Medicine medicine = intake.getMedicine();
-        
+
         // 1. Set Patient Name (Show if it's for the Doctor)
         if (medicine.getPatientName() != null && !medicine.getPatientName().equals("You")) {
             holder.tvPatientName.setVisibility(View.VISIBLE);
@@ -51,20 +51,20 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
         // 2. Set Intake Time as Primary
         holder.tvIntakeTimePrimary.setText(intake.getIntakeTime());
 
-        // 3. Basic Info (Medicine Name is now secondary)
+        // 3. Basic Info
         holder.tvMedName.setText(medicine.getName());
         String amountText = medicine.getAmount() + " " + (medicine.getUnit() != null ? medicine.getUnit() : "");
         holder.tvMedAmount.setText(amountText);
         holder.tvMedInstruction.setText(medicine.getInstruction());
 
-        // 4. Status Logic
-        String status = medicine.getStatus() != null ? medicine.getStatus().toUpperCase() : "PENDING";
+        // 4. Status — now per intake time, not per medicine
+        String status = intake.getStatus() != null ? intake.getStatus().toUpperCase() : "PENDING";
         holder.tvStatus.setText(status);
 
         if ("TAKEN".equals(status)) {
             holder.tvStatus.setBackgroundResource(R.drawable.bg_card_green);
         } else if ("MISSED".equals(status)) {
-            holder.tvStatus.setBackgroundResource(R.drawable.bg_card_orange); 
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_card_orange);
         } else {
             holder.tvStatus.setBackgroundResource(R.drawable.bg_card_blue);
         }

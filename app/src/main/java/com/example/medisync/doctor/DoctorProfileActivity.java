@@ -77,6 +77,15 @@ public class DoctorProfileActivity extends AppCompatActivity {
         backBtn.setOnClickListener(v -> finish());
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            loadProfile(user.getUid());
+        }
+    }
+
     private void loadProfile(String uid) {
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(doc -> {

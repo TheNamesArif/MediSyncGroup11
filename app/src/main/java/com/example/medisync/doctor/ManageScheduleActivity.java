@@ -50,7 +50,7 @@ public class ManageScheduleActivity extends AppCompatActivity {
     private List<String> patientNames = new ArrayList<>();
     private List<String> currentIntakeTimes = new ArrayList<>();
     private List<Map<String, Object>> medicineList = new ArrayList<>();
-    
+
     private Date startDate, endDate;
     private String selectedPatientId, selectedPatientName;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -61,7 +61,7 @@ public class ManageScheduleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_manage_schedule);
-        
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -189,15 +189,21 @@ public class ManageScheduleActivity extends AppCompatActivity {
             return;
         }
 
+        // Build intakeTimes as a Map where key is time and value is "pending"
+        Map<String, String> intakeMap = new HashMap<>();
+        for (String time : currentIntakeTimes) {
+            intakeMap.put(time, "pending");
+        }
+
         Map<String, Object> medicine = new HashMap<>();
         medicine.put("name", name);
         medicine.put("amount", amount);
         medicine.put("unit", spinnerUnit.getSelectedItem().toString());
         medicine.put("instruction", spinnerInstruction.getSelectedItem().toString());
-        medicine.put("intakeTimes", new ArrayList<>(currentIntakeTimes));
-        medicine.put("status", "pending");
+        medicine.put("intakeTimes", intakeMap);
         medicine.put("patientName", selectedPatientName);
-        medicine.put("patientUid", selectedPatientId); // Added patientUid to document
+        medicine.put("patientUid", selectedPatientId);
+        // no top-level "status" anymore
 
         medicineList.add(medicine);
         etMedicineName.setText(""); etIntakeAmount.setText("");

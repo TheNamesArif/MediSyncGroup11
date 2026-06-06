@@ -1,6 +1,6 @@
 package com.example.medisync.model;
 
-import java.util.List;
+import java.util.Map;
 
 public class Medicine {
     private String documentId;
@@ -8,21 +8,21 @@ public class Medicine {
     private String amount;
     private String unit;
     private String instruction;
-    private List<String> intakeTimes;
-    private String status;
+    private Map<String, String> intakeTimes; // Map where key is time (e.g. "10:30 am") and value is status
     private String patientName;
-    private String patientUid; // Added to handle path for Update/Delete
+    private String patientUid;
+    private String status; // Kept for overall status if needed, or backward compatibility
 
     public Medicine() {}
 
-    public Medicine(String documentId, String name, String amount, String unit, String instruction, List<String> intakeTimes, String status, String patientName, String patientUid) {
+    public Medicine(String documentId, String name, String amount, String unit, String instruction,
+                    Map<String, String> intakeTimes, String patientName, String patientUid) {
         this.documentId = documentId;
         this.name = name;
         this.amount = amount;
         this.unit = unit;
         this.instruction = instruction;
         this.intakeTimes = intakeTimes;
-        this.status = status;
         this.patientName = patientName;
         this.patientUid = patientUid;
     }
@@ -32,8 +32,9 @@ public class Medicine {
     public String getAmount() { return amount; }
     public String getUnit() { return unit; }
     public String getInstruction() { return instruction; }
-    public List<String> getIntakeTimes() { return intakeTimes; }
-    public String getStatus() { return status; }
+    public Map<String, String> getIntakeTimes() { return intakeTimes; }
     public String getPatientName() { return patientName; }
     public String getPatientUid() { return patientUid; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

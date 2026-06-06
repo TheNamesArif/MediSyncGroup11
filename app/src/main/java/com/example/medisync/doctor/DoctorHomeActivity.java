@@ -22,6 +22,7 @@ import com.example.medisync.adapter.MedicineAdapter;
 import com.example.medisync.auth.LoginActivity;
 import com.example.medisync.model.Medicine;
 import com.example.medisync.model.MedicineIntake;
+import com.example.medisync.patient.TakenStatusActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -31,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
 
 import devs.mulham.horizontalcalendar.HorizontalCalendar;
@@ -107,8 +110,17 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
 
     @Override
     public void onIntakeClick(MedicineIntake intake) {
-        // Doctors can see a quick summary or open details
-        Toast.makeText(this, "Medicine: " + intake.getMedicine().getName() + " for " + intake.getMedicine().getPatientName(), Toast.LENGTH_SHORT).show();
+        // Now opens the same TakenStatusActivity shared with patients
+        Intent intent = new Intent(this, TakenStatusActivity.class);
+        intent.putExtra("medicineId", intake.getMedicine().getDocumentId());
+        intent.putExtra("patientUid", intake.getMedicine().getPatientUid());
+        intent.putExtra("patientName", intake.getMedicine().getPatientName());
+        intent.putExtra("intakeTime", intake.getIntakeTime());
+        intent.putExtra("currentStatus", intake.getStatus());
+        intent.putExtra("medName", intake.getMedicine().getName());
+        intent.putExtra("medAmount", intake.getMedicine().getAmount() + " " + intake.getMedicine().getUnit());
+        intent.putExtra("medInstruction", intake.getMedicine().getInstruction());
+        startActivity(intent);
     }
 
     private void updateTimetable(Calendar calendar) {
@@ -138,12 +150,15 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
                         Date rangeEndDate = doc.getDate("endDate");
                         
                         if (rangeEndDate != null && !rangeEndDate.before(targetStart)) {
-                            // Safe casting for intakeTimes
+                            // Safe casting for intakeTimes Map
                             Object intakeTimesObj = doc.get("intakeTimes");
-                            List<String> intakeTimes = new ArrayList<>();
-                            if (intakeTimesObj instanceof List<?>) {
-                                for (Object item : (List<?>) intakeTimesObj) {
-                                    if (item instanceof String) intakeTimes.add((String) item);
+                            Map<String, String> intakeMap = new HashMap<>();
+                            if (intakeTimesObj instanceof Map<?, ?>) {
+                                Map<?, ?> rawMap = (Map<?, ?>) intakeTimesObj;
+                                for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                                    if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
+                                        intakeMap.put((String) entry.getKey(), (String) entry.getValue());
+                                    }
                                 }
                             }
 
@@ -153,17 +168,14 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
                                     doc.getString("amount"),
                                     doc.getString("unit"),
                                     doc.getString("instruction"),
-                                    intakeTimes,
-                                    doc.getString("status"),
+                                    intakeMap,
                                     doc.getString("patientName"),
                                     doc.getString("patientUid")
                             );
 
                             // Flatten intake times for Doctor's view
-                            if (!intakeTimes.isEmpty()) {
-                                for (String time : intakeTimes) {
-                                    intakeList.add(new MedicineIntake(medicine, time));
-                                }
+                            for (Map.Entry<String, String> entry : intakeMap.entrySet()) {
+                                intakeList.add(new MedicineIntake(medicine, entry.getKey(), entry.getValue()));
                             }
                         }
                     }

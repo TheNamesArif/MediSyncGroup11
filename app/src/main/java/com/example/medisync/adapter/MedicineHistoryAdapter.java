@@ -13,6 +13,7 @@ import com.example.medisync.R;
 import com.example.medisync.model.Medicine;
 
 import java.util.List;
+import java.util.Map;
 
 public class MedicineHistoryAdapter extends RecyclerView.Adapter<MedicineHistoryAdapter.ViewHolder> {
 
@@ -40,18 +41,20 @@ public class MedicineHistoryAdapter extends RecyclerView.Adapter<MedicineHistory
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Medicine medicine = medicineList.get(position);
-        
+
         holder.tvMedName.setText(medicine.getName());
         String amountText = medicine.getAmount() + " " + (medicine.getUnit() != null ? medicine.getUnit() : "");
         holder.tvMedAmount.setText(amountText);
-        
-        String status = medicine.getStatus() != null ? medicine.getStatus().toUpperCase() : "PENDING";
-        holder.tvStatus.setText(status);
 
-        if ("TAKEN".equals(status)) {
+        // Derive an overall status summary from all intake times
+        // Shows "ALL TAKEN" if every intake is taken, otherwise shows the first non-taken status
+        String overallStatus = getOverallStatus(medicine);
+        holder.tvStatus.setText(overallStatus);
+
+        if ("ALL TAKEN".equals(overallStatus)) {
             holder.tvStatus.setBackgroundResource(R.drawable.bg_card_green);
-        } else if ("MISSED".equals(status)) {
-            holder.tvStatus.setBackgroundResource(R.drawable.bg_card_orange); 
+        } else if (overallStatus.contains("MISSED")) {
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_card_orange);
         } else {
             holder.tvStatus.setBackgroundResource(R.drawable.bg_card_blue);
         }
@@ -59,6 +62,23 @@ public class MedicineHistoryAdapter extends RecyclerView.Adapter<MedicineHistory
         holder.btnView.setOnClickListener(v -> listener.onView(medicine));
         holder.btnEdit.setOnClickListener(v -> listener.onEdit(medicine));
         holder.btnDelete.setOnClickListener(v -> listener.onDelete(medicine));
+    }
+
+    private String getOverallStatus(Medicine medicine) {
+        Map<String, String> intakeTimes = medicine.getIntakeTimes();
+        if (intakeTimes == null || intakeTimes.isEmpty()) return "PENDING";
+
+        boolean allTaken = true;
+        boolean anyMissed = false;
+
+        for (String status : intakeTimes.values()) {
+            if (!"taken".equalsIgnoreCase(status)) allTaken = false;
+            if ("missed".equalsIgnoreCase(status)) anyMissed = true;
+        }
+
+        if (allTaken) return "ALL TAKEN";
+        if (anyMissed) return "MISSED";
+        return "PENDING";
     }
 
     @Override

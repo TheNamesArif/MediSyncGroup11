@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,7 +34,8 @@ public class UpdateMedicineActivity extends AppCompatActivity {
     private TextView tvTimes;
 
     private String docId, patientId;
-    private List<String> intakeTimes = new ArrayList<>();
+    private List<String> intakeTimes = new ArrayList<>(); // just the time strings for display/editing
+    private Map<String, String> existingIntakeMap = new HashMap<>(); // original map from Firestore
     private Date startDate, endDate;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
     private SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
@@ -77,7 +77,6 @@ public class UpdateMedicineActivity extends AppCompatActivity {
         btnUpdate = findViewById(R.id.btnUpdate);
         tvTimes = findViewById(R.id.tvSelectedTimes);
 
-        // Setup Spinners
         String[] units = {"Pills", "ML"};
         ArrayAdapter<String> unitAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, units);
         spinnerUnit.setAdapter(unitAdapter);
@@ -96,11 +95,23 @@ public class UpdateMedicineActivity extends AppCompatActivity {
                         etRemarks.setText(doc.getString("remarks"));
                         startDate = doc.getDate("startDate");
                         endDate = doc.getDate("endDate");
-                        
-                        List<String> times = (List<String>) doc.get("intakeTimes");
-                        if (times != null) intakeTimes.addAll(times);
 
-                        // Set Spinner Selections
+                        // Load intakeTimes as Map
+                        Object loadedObj = doc.get("intakeTimes");
+                        if (loadedObj instanceof Map<?, ?>) {
+                            Map<?, ?> rawMap = (Map<?, ?>) loadedObj;
+                            existingIntakeMap.clear();
+                            intakeTimes.clear();
+                            for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                                if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
+                                    String time = (String) entry.getKey();
+                                    String status = (String) entry.getValue();
+                                    existingIntakeMap.put(time, status);
+                                    intakeTimes.add(time);
+                                }
+                            }
+                        }
+
                         setSpinnerSelection(spinnerUnit, doc.getString("unit"));
                         setSpinnerSelection(spinnerInstruction, doc.getString("instruction"));
 
@@ -131,15 +142,15 @@ public class UpdateMedicineActivity extends AppCompatActivity {
     private void showDatePicker(boolean isStart) {
         Calendar cal = Calendar.getInstance();
         if (!isStart && startDate != null) cal.setTime(startDate);
-        
+
         new DatePickerDialog(this, (view, y, m, d) -> {
             cal.set(y, m, d);
-            if (isStart) { 
-                startDate = cal.getTime(); 
-                btnStart.setText(dateFormat.format(startDate)); 
-            } else { 
-                endDate = cal.getTime(); 
-                btnEnd.setText(dateFormat.format(endDate)); 
+            if (isStart) {
+                startDate = cal.getTime();
+                btnStart.setText(dateFormat.format(startDate));
+            } else {
+                endDate = cal.getTime();
+                btnEnd.setText(dateFormat.format(endDate));
             }
         }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
     }
@@ -148,8 +159,12 @@ public class UpdateMedicineActivity extends AppCompatActivity {
         Calendar cal = Calendar.getInstance();
         new TimePickerDialog(this, (view, h, m) -> {
             cal.set(Calendar.HOUR_OF_DAY, h); cal.set(Calendar.MINUTE, m);
-            intakeTimes.add(timeFormat.format(cal.getTime()));
-            updateTimesUI();
+            String newTime = timeFormat.format(cal.getTime());
+            if (!intakeTimes.contains(newTime)) {
+                intakeTimes.add(newTime);
+                existingIntakeMap.put(newTime, "pending");
+                updateTimesUI();
+            }
         }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), false).show();
     }
 
@@ -173,12 +188,19 @@ public class UpdateMedicineActivity extends AppCompatActivity {
         btnUpdate.setEnabled(false);
         btnUpdate.setText("Updating...");
 
+        // Rebuild intakeMap using existing statuses where available
+        Map<String, String> finalIntakeMap = new HashMap<>();
+        for (String time : intakeTimes) {
+            String status = existingIntakeMap.get(time);
+            finalIntakeMap.put(time, status != null ? status : "pending");
+        }
+
         Map<String, Object> map = new HashMap<>();
         map.put("name", name);
         map.put("amount", amount);
         map.put("unit", spinnerUnit.getSelectedItem().toString());
         map.put("instruction", spinnerInstruction.getSelectedItem().toString());
-        map.put("intakeTimes", intakeTimes);
+        map.put("intakeTimes", finalIntakeMap);
         map.put("startDate", startDate);
         map.put("endDate", endDate);
         map.put("remarks", etRemarks.getText().toString().trim());
