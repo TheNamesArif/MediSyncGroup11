@@ -10,7 +10,7 @@ void displayInit() {
 
 void displayWelcome() {
   lcd.clear();
-  lcd.setCursor(3, 0); lcd.print("MediSync");
+  lcd.setCursor(6, 0); lcd.print("MediSync");
   lcd.setCursor(0, 2); lcd.print("Initializing");
   lcd.setCursor(0, 3); lcd.print("Please wait...");
 }
@@ -74,6 +74,12 @@ void displayError(String msg) {
   lcd.clear();
   lcd.setCursor(0, 0); lcd.print("ERROR:");
   lcd.setCursor(0, 1); lcd.print(msg.substring(0, 20));
+}
+
+void displayIntakeConfirmed() {
+  lcd.clear();
+  lcd.setCursor(3, 1); lcd.print("Intake Confirmed!");
+  lcd.setCursor(4, 2); lcd.print("Well done! :)");
 }
 
 void displayClear() {

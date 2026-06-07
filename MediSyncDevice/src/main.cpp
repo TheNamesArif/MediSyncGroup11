@@ -24,7 +24,7 @@ unsigned long lastBlink   = 0;
 bool ledState             = false;
 
 int  alertMedIndex        = -1;
-int  alertTimeIndex       = -1;
+String alertTimeKey       = "";   // the "HH:MM AM/PM" key that triggered the alert
 bool alreadyAlerting      = false;
 bool postDismiss = false;
 
@@ -92,7 +92,7 @@ String getCurrentTimeStr(DateTime now) {
 String getCurrentDateTimeStr(DateTime now) {
   return twoDigit(now.day()) + "/" +
          twoDigit(now.month()) + "/" +
-         twoDigit(now.year() % 100) + " " +    // % 100 gives last 2 digits of year
+         twoDigit(now.year() % 100) + "    " +    // % 100 gives last 2 digits of year
          twoDigit(now.hour()) + ":" +
          twoDigit(now.minute()) + ":" +
          twoDigit(now.second());
@@ -132,24 +132,24 @@ String getNextIntakeTime(Medicine& med, DateTime now) {
   String nextTime = "";
   int minDiff = 99999;
 
-  // Find the next upcoming time today
-  for (String t : med.intakeTimes) {
-    int tMins = toMinutes(t);
+  // Find the next upcoming time today (map keys are the time strings)
+  for (auto& kv : med.intakeTimes) {
+    int tMins = toMinutes(kv.first);
     int diff = tMins - nowMinutes;
     if (diff > 0 && diff < minDiff) {
       minDiff = diff;
-      nextTime = t;
+      nextTime = kv.first;
     }
   }
 
   // If none found today, wrap around to earliest time tomorrow
   if (nextTime == "") {
     int minMins = 99999;
-    for (String t : med.intakeTimes) {
-      int tMins = toMinutes(t);
+    for (auto& kv : med.intakeTimes) {
+      int tMins = toMinutes(kv.first);
       if (tMins < minMins) {
         minMins = tMins;
-        nextTime = t;
+        nextTime = kv.first;
       }
     }
   }
@@ -256,33 +256,65 @@ void loop() {
         Serial.println("Alert dismissed by button");
         if (alertMedIndex >= 0 && alertMedIndex < (int)medicines.size()) {
           Medicine& m = medicines[alertMedIndex];
-          displayMedicine(m.name, m.intakeTimes[alertTimeIndex],
+          displayMedicine(m.name, alertTimeKey,
                           m.instruction, m.amount, m.unit);
-          postDismiss = true;   // ← enter post-dismiss state
+          postDismiss = true;
         }
-        delay(500);
+        // Wait for button release before returning,
+        // so the postDismiss block doesn't immediately re-trigger.
+        while (digitalRead(PIN_BUTTON) == LOW) delay(10);
+        delay(200);  // extra settle time
       }
-    }
-    if (millis() - _alertStart > ALERT_AUTO_STOP_MS) {
+
+    } else if (millis() - _alertStart > ALERT_AUTO_STOP_MS) { // Auto-stop after defined duration (e.g. 5 minutes)
       alertStop();
       alreadyAlerting = false;
-      Serial.println("Alert auto-stopped");
+      Serial.println("Alert auto-stopped — marking missed");
+      if (alertMedIndex >= 0 && alertMedIndex < (int)medicines.size()) {
+        Medicine& m = medicines[alertMedIndex];
+        if (m.intakeTimes.count(alertTimeKey)) {
+          m.intakeTimes[alertTimeKey] = "missed";
+        }
+        bool ok = firebaseUpdateIntakeStatus(m, alertTimeKey, "missed");
+        Serial.println(ok ? "Status updated: missed" : "Update failed");
+      }
+      alertMedIndex = -1;
+      alertTimeKey  = "";
+      displayClear();  // back to idle — loop() will resume normal clock/scroll
     }
     return;
   }
 
-  // ── Post-dismiss screen ──────────────────────────────
+  // ── Post-dismiss screen ───────────────────────────────
   if (postDismiss) {
     if (digitalRead(PIN_BUTTON) == LOW) {
       delay(50);
       if (digitalRead(PIN_BUTTON) == LOW) {
+        // Wait for release first, then proceed
+        while (digitalRead(PIN_BUTTON) == LOW) delay(10);
+        delay(200);
+
         postDismiss = false;
+        Serial.println("Intake confirmed — updating Firestore");
+        if (alertMedIndex >= 0 && alertMedIndex < (int)medicines.size()) {
+          Medicine& m = medicines[alertMedIndex];
+          if (m.intakeTimes.count(alertTimeKey)) {
+            m.intakeTimes[alertTimeKey] = "taken";
+          }
+          displayFetching();
+          bool ok = firebaseUpdateIntakeStatus(m, alertTimeKey, "taken");
+          Serial.println(ok ? "Status updated: taken" : "Update failed");
+        }
+        alertMedIndex = -1;
+        alertTimeKey  = "";
+        
+        displayIntakeConfirmed();
+        delay(2000);
         displayClear();
-        Serial.println("Post-dismiss dismissed by button");
         delay(500);
       }
     }
-    return;   // hold here, skip idle updates
+    return;
   }
 
   // ── Update clock on LCD row 0 ────────────────────────
@@ -327,15 +359,17 @@ void loop() {
         continue;
       }
 
-      for (int j = 0; j < (int)med.intakeTimes.size(); j++) {
-        Serial.println("  Comparing: [" + currentTimeStr + "] vs [" + med.intakeTimes[j] + "]");
-        if (timesMatch(currentTimeStr, med.intakeTimes[j])) {
+      for (auto& kv : med.intakeTimes) {
+        Serial.println("  Comparing: [" + currentTimeStr + "] vs [" + kv.first + "] status=" + kv.second);
+        // Only alert for times that haven't been taken yet
+        if (kv.second == "taken") continue;
+        if (timesMatch(currentTimeStr, kv.first)) {
           Serial.println("MATCH → triggering alert for: " + med.name);
           alertMedIndex   = i;
-          alertTimeIndex  = j;
+          alertTimeKey    = kv.first;
           alreadyAlerting = true;
           alertTrigger();
-          displayAlert(med.name, med.intakeTimes[j], med.instruction, med.amount, med.unit, currentTimeStr);
+          displayAlert(med.name, kv.first, med.instruction, med.amount, med.unit, currentTimeStr);
           triggered = true;
           break;
         }

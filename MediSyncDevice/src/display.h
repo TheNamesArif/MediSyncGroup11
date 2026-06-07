@@ -10,5 +10,6 @@ void displayAlert(String name, String time, String instruction, String amount, S
 void displayNoMeds();
 void displayFetching();
 void displayError(String msg);
+void displayIntakeConfirmed();
 void displayClear();
 void displayMedicineIdle(String name, String time, int current, int total);

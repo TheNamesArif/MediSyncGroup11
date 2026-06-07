@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include <vector>
+#include <map>
 
 struct Medicine {
   String docId;
@@ -9,8 +10,12 @@ struct Medicine {
   String unit;
   String instruction;
   String remarks;
-  std::vector<String> intakeTimes;  // e.g. ["10:30 pm", "08:00 am"]
+  // key = normalized time "HH:MM AM/PM", value = "pending" | "taken"
+  std::map<String, String> intakeTimes;
   long endDateSeconds;              // unix timestamp
 };
 
 bool firebaseFetch(std::vector<Medicine>& medicines);
+
+// Marks a single intake time as "taken" in Firestore (PATCH)
+bool firebaseUpdateIntakeStatus(const Medicine& med, const String& timeKey, const String& status);

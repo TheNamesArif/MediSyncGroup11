@@ -89,16 +89,72 @@ bool firebaseFetch(std::vector<Medicine>& medicines) {
       med.endDateSeconds = mktime(&t);
     }
 
-    // intakeTimes array
-    JsonArray times = fields["intakeTimes"]["arrayValue"]["values"].as<JsonArray>();
-    for (JsonObject tv : times) {
-      String t = tv["stringValue"].as<String>();
-      med.intakeTimes.push_back(normalizeTime(t));
+    // intakeTimes map: { "07:00 PM": "pending", "09:00 PM": "taken", ... }
+    JsonObject timesMap = fields["intakeTimes"]["mapValue"]["fields"].as<JsonObject>();
+    for (JsonPair kv : timesMap) {
+      String timeKey = normalizeTime(String(kv.key().c_str()));
+      String status  = kv.value()["stringValue"].as<String>();
+      med.intakeTimes[timeKey] = status;
+      Serial.println("  Time: " + timeKey + " → " + status);
     }
 
     medicines.push_back(med);
     Serial.println("Loaded: " + med.name + " | times: " + med.intakeTimes.size());
   }
 
+  return true;
+}
+
+// ── PATCH a single intakeTimes entry to "taken" ───────────────────────────────
+bool firebaseUpdateIntakeStatus(const Medicine& med, const String& timeKey, const String& status) {
+  WiFiClientSecure client;
+  client.setInsecure();
+
+  HTTPClient http;
+
+  // Firestore field path uses dot notation; the time key contains spaces/colons
+  // so we use the updateMask approach with the full intakeTimes map re-sent.
+  // We PATCH only the intakeTimes field using a field-level update mask.
+  // URL: PATCH .../documents/users/{uid}/medicines/{docId}?updateMask.fieldPaths=intakeTimes&key=...
+  String url = "https://firestore.googleapis.com/v1/projects/";
+  url += PROJECT_ID;
+  url += "/databases/(default)/documents/users/";
+  url += USER_ID;
+  url += "/medicines/";
+  url += med.docId;
+  url += "?updateMask.fieldPaths=intakeTimes&key=";
+  url += FIREBASE_API_KEY;
+
+  // Build the full intakeTimes mapValue with the updated entry
+  // We must resend all keys because Firestore replaces the whole field
+  DynamicJsonDocument body(4096);
+  JsonObject fields  = body.createNestedObject("fields");
+  JsonObject itField = fields.createNestedObject("intakeTimes");
+  JsonObject mapVal  = itField.createNestedObject("mapValue");
+  JsonObject mapFlds = mapVal.createNestedObject("fields");
+
+  for (auto& kv : med.intakeTimes) {
+    String val = (kv.first == timeKey) ? status : kv.second;
+    mapFlds[kv.first]["stringValue"] = val;
+  }
+
+  String bodyStr;
+  serializeJson(body, bodyStr);
+
+  Serial.println("PATCH " + url);
+  Serial.println("Body: " + bodyStr);
+
+  http.begin(client, url);
+  http.setTimeout(10000);
+  http.addHeader("Content-Type", "application/json");
+  int code = http.PATCH(bodyStr);
+  String resp = http.getString();
+  http.end();
+
+  Serial.println("PATCH code: " + String(code));
+  if (code != 200) {
+    Serial.println("PATCH failed: " + resp);
+    return false;
+  }
   return true;
 }
