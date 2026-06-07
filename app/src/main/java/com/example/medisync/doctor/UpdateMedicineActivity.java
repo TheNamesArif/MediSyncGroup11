@@ -188,11 +188,24 @@ public class UpdateMedicineActivity extends AppCompatActivity {
         btnUpdate.setEnabled(false);
         btnUpdate.setText("Updating...");
 
-        // Rebuild intakeMap using existing statuses where available
-        Map<String, String> finalIntakeMap = new HashMap<>();
-        for (String time : intakeTimes) {
-            String status = existingIntakeMap.get(time);
-            finalIntakeMap.put(time, status != null ? status : "pending");
+        // Rebuild intakeMap as a Map where key is index and value is {time, status}
+        Map<String, Object> finalIntakeMap = new HashMap<>();
+        for (int i = 0; i < intakeTimes.size(); i++) {
+            String time = intakeTimes.get(i);
+            String status = "pending";
+            
+            // Try to find if this time already existed to preserve its status
+            for (Map.Entry<String, String> entry : existingIntakeMap.entrySet()) {
+                if (entry.getKey().equals(time)) {
+                    status = entry.getValue();
+                    break;
+                }
+            }
+
+            Map<String, String> details = new HashMap<>();
+            details.put("time", time);
+            details.put("status", status);
+            finalIntakeMap.put(String.valueOf(i), details);
         }
 
         Map<String, Object> map = new HashMap<>();

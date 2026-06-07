@@ -116,6 +116,7 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
         intent.putExtra("patientUid", intake.getMedicine().getPatientUid());
         intent.putExtra("patientName", intake.getMedicine().getPatientName());
         intent.putExtra("intakeTime", intake.getIntakeTime());
+        intent.putExtra("intakeIndex", intake.getIndex());
         intent.putExtra("currentStatus", intake.getStatus());
         intent.putExtra("medName", intake.getMedicine().getName());
         intent.putExtra("medAmount", intake.getMedicine().getAmount() + " " + intake.getMedicine().getUnit());
@@ -149,19 +150,11 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
                     intakeList.clear();
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Date rangeEndDate = doc.getDate("endDate");
-                        
+
                         if (rangeEndDate != null && !rangeEndDate.before(targetStart)) {
                             // Safe casting for intakeTimes Map
                             Object intakeTimesObj = doc.get("intakeTimes");
                             Map<String, String> intakeMap = new HashMap<>();
-                            if (intakeTimesObj instanceof Map<?, ?>) {
-                                Map<?, ?> rawMap = (Map<?, ?>) intakeTimesObj;
-                                for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
-                                    if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
-                                        intakeMap.put((String) entry.getKey(), (String) entry.getValue());
-                                    }
-                                }
-                            }
 
                             Medicine medicine = new Medicine(
                                     doc.getId(),
@@ -175,9 +168,36 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
                                     doc.getString("remarks")
                             );
 
-                            // Flatten intake times for Doctor's view
-                            for (Map.Entry<String, String> entry : intakeMap.entrySet()) {
-                                intakeList.add(new MedicineIntake(medicine, entry.getKey(), entry.getValue()));
+                            if (intakeTimesObj instanceof Map<?, ?>) {
+                                Map<?, ?> rawMap = (Map<?, ?>) intakeTimesObj;
+                                int idx = 0;
+                                for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                                    String time = "";
+                                    String status = "pending";
+                                    int finalIndex = idx;
+
+                                    if (entry.getValue() instanceof String) {
+                                        // Old structure: Time -> Status
+                                        time = (String) entry.getKey();
+                                        status = (String) entry.getValue();
+                                    } else if (entry.getValue() instanceof Map) {
+                                        // New structure: Index -> {time, status}
+                                        Map<?, ?> valMap = (Map<?, ?>) entry.getValue();
+                                        time = (String) valMap.get("time");
+                                        status = (String) valMap.get("status");
+                                        try {
+                                            finalIndex = Integer.parseInt(entry.getKey().toString());
+                                        } catch (Exception e) {
+                                            finalIndex = idx;
+                                        }
+                                    }
+
+                                    if (time != null && !time.isEmpty()) {
+                                        intakeMap.put(time, status);
+                                        intakeList.add(new MedicineIntake(medicine, time, status, finalIndex));
+                                    }
+                                    idx++;
+                                }
                             }
                         }
                     }

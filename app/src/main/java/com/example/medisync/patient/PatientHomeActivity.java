@@ -1,7 +1,14 @@
 package com.example.medisync.patient;
 
+import android.app.AlarmManager;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -22,6 +29,7 @@ import com.example.medisync.adapter.MedicineAdapter;
 import com.example.medisync.auth.LoginActivity;
 import com.example.medisync.model.Medicine;
 import com.example.medisync.model.MedicineIntake;
+import com.example.medisync.receiver.MedicineAlarmManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -64,6 +72,10 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
+        checkNotificationPermission();
+        checkExactAlarmPermission();
+        checkFullScreenIntentPermission();
+
         tvDateTitle = findViewById(R.id.tvDateTitle);
         RecyclerView rvSchedule = findViewById(R.id.rvSchedule);
         rvSchedule.setLayoutManager(new LinearLayoutManager(this));
@@ -76,6 +88,36 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
         // Menu button
         ImageButton imgBtnMenu = findViewById(R.id.imgBtnMenu);
         imgBtnMenu.setOnClickListener(this::showDropdownMenu);
+    }
+
+    private void checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+    }
+
+    private void checkExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+            }
+        }
+    }
+
+    private void checkFullScreenIntentPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            NotificationManager nm = getSystemService(NotificationManager.class);
+            if (nm != null && !nm.canUseFullScreenIntent()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+            }
+        }
     }
 
     @Override
@@ -138,14 +180,6 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
                             // Safe casting for intakeTimes Map
                             Object intakeTimesObj = doc.get("intakeTimes");
                             Map<String, String> intakeMap = new HashMap<>();
-                            if (intakeTimesObj instanceof Map<?, ?>) {
-                                Map<?, ?> rawMap = (Map<?, ?>) intakeTimesObj;
-                                for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
-                                    if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
-                                        intakeMap.put((String) entry.getKey(), (String) entry.getValue());
-                                    }
-                                }
-                            }
 
                             Medicine medicine = new Medicine(
                                     doc.getId(),
@@ -159,9 +193,52 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
                                     doc.getString("remarks")
                             );
 
-                            // Each intake time is now a key in the Map
-                            for (Map.Entry<String, String> entry : intakeMap.entrySet()) {
-                                intakeList.add(new MedicineIntake(medicine, entry.getKey(), entry.getValue()));
+                            if (intakeTimesObj instanceof Map<?, ?>) {
+                                Map<?, ?> rawMap = (Map<?, ?>) intakeTimesObj;
+                                int intakeCounter = 0;
+                                for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                                    String time = "";
+                                    String status = "pending";
+                                    int finalIndex = intakeCounter;
+
+                                    if (entry.getValue() instanceof String) {
+                                        // Old structure: Time -> Status
+                                        time = (String) entry.getKey();
+                                        status = (String) entry.getValue();
+                                    } else if (entry.getValue() instanceof Map) {
+                                        // New structure: Index -> {time, status}
+                                        Map<?, ?> valMap = (Map<?, ?>) entry.getValue();
+                                        time = (String) valMap.get("time");
+                                        status = (String) valMap.get("status");
+                                        try {
+                                            finalIndex = Integer.parseInt(entry.getKey().toString());
+                                        } catch (Exception e) {
+                                            finalIndex = intakeCounter;
+                                        }
+                                    }
+
+                                    if (time != null && !time.isEmpty()) {
+                                        intakeMap.put(time, status);
+                                        MedicineIntake intake = new MedicineIntake(medicine, time, status, finalIndex);
+                                        intakeList.add(intake);
+
+                                        // ── NEW: Set alarm if today and pending ──
+                                        if ("pending".equalsIgnoreCase(status) && isToday(selectedDate)) {
+                                            MedicineAlarmManager.setAlarm(
+                                                    this,
+                                                    medicine.getName(),
+                                                    medicine.getDocumentId(),
+                                                    medicine.getPatientUid(),
+                                                    finalIndex,
+                                                    time,
+                                                    medicine.getAmount(),
+                                                    medicine.getUnit(),
+                                                    medicine.getInstruction()
+                                            );
+                                        }
+                                    }
+                                    intakeCounter++;
+                                }
                             }
                         }
                     }
@@ -193,12 +270,21 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
         intent.putExtra("patientUid", intake.getMedicine().getPatientUid());
         intent.putExtra("patientName", intake.getMedicine().getPatientName());
         intent.putExtra("intakeTime", intake.getIntakeTime());
+        intent.putExtra("intakeIndex", intake.getIndex());
         intent.putExtra("currentStatus", intake.getStatus());
         intent.putExtra("medName", intake.getMedicine().getName());
         intent.putExtra("medAmount", intake.getMedicine().getAmount() + " " + intake.getMedicine().getUnit());
         intent.putExtra("medInstruction", intake.getMedicine().getInstruction());
         intent.putExtra("medRemarks", intake.getMedicine().getRemarks());
         startActivity(intent);
+    }
+
+    private boolean isToday(Date date) {
+        Calendar cal1 = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTime(date);
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
     }
 
     private void showDropdownMenu(View anchor) {

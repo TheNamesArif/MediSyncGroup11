@@ -7,6 +7,7 @@
     <!-- Notification and Alarm Permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
@@ -20,8 +21,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Medisync">
 
-        <!-- Notification Receiver -->
+        <!-- Notification Receivers -->
         <receiver android:name=".receiver.ReminderReceiver" />
+        <receiver android:name=".receiver.ActionReceiver" />
 
         <!-- New Update Page -->
         <activity

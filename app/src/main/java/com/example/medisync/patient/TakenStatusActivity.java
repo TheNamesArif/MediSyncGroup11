@@ -131,7 +131,13 @@ public class TakenStatusActivity extends AppCompatActivity {
             return;
         }
 
-        String fieldPath = "intakeTimes." + intakeTime;
+        int intakeIndex = getIntent().getIntExtra("intakeIndex", -1);
+        String fieldPath;
+        if (intakeIndex != -1) {
+            fieldPath = "intakeTimes." + intakeIndex + ".status";
+        } else {
+            fieldPath = "intakeTimes." + intakeTime;
+        }
 
         db.collection("users").document(patientUid)
                 .collection("medicines").document(medicineId)

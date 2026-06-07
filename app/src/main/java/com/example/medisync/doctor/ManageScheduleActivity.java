@@ -189,10 +189,13 @@ public class ManageScheduleActivity extends AppCompatActivity {
             return;
         }
 
-        // Build intakeTimes as a Map where key is time and value is "pending"
-        Map<String, String> intakeMap = new HashMap<>();
-        for (String time : currentIntakeTimes) {
-            intakeMap.put(time, "pending");
+        // Build intakeTimes as a Map where key is index and value is a map of {time, status}
+        Map<String, Object> intakeMap = new HashMap<>();
+        for (int i = 0; i < currentIntakeTimes.size(); i++) {
+            Map<String, String> details = new HashMap<>();
+            details.put("time", currentIntakeTimes.get(i));
+            details.put("status", "pending");
+            intakeMap.put(String.valueOf(i), details);
         }
 
         Map<String, Object> medicine = new HashMap<>();
