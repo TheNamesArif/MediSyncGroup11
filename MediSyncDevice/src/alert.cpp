@@ -35,7 +35,7 @@ void alertTrigger() {
   _lastBeep     = millis();
   _buzzerState  = true;
   digitalWrite(PIN_BUZZER, HIGH);   // start first beep immediately
-  dfPlayer.play(1);
+  dfPlayer.loop(1);
 }
 
 void alertStop() {
@@ -63,4 +63,8 @@ void alertUpdate() {
     _buzzerState = true;
     _lastBeep    = now;
   }
+}
+
+void alertPlayConfirm() {
+  dfPlayer.play(2);  // plays track 2 once, no loop
 }

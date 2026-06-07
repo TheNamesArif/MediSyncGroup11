@@ -253,6 +253,7 @@ void loop() {
       if (digitalRead(PIN_BUTTON) == LOW) {
         alertStop();
         alreadyAlerting = false;
+        alertPlayConfirm(); // plays track 2 once after dismiss
         Serial.println("Alert dismissed by button");
         if (alertMedIndex >= 0 && alertMedIndex < (int)medicines.size()) {
           Medicine& m = medicines[alertMedIndex];
