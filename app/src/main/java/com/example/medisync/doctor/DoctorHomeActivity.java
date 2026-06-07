@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.medisync.R;
 import com.example.medisync.adapter.MedicineAdapter;
@@ -42,6 +43,8 @@ import devs.mulham.horizontalcalendar.utils.HorizontalCalendarListener;
 public class DoctorHomeActivity extends AppCompatActivity implements MedicineAdapter.OnIntakeClickListener {
 
     private TextView tvDateTitle;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private Calendar selectedDateCalendar = Calendar.getInstance();
     private MedicineAdapter adapter;
     private final List<MedicineIntake> intakeList = new ArrayList<>();
     private FirebaseFirestore db;
@@ -65,6 +68,7 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
 
         // Initialize UI
         tvDateTitle = findViewById(R.id.tvDateTitle);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         RecyclerView rvSchedule = findViewById(R.id.rvSchedule);
         rvSchedule.setLayoutManager(new LinearLayoutManager(this));
         
@@ -88,6 +92,10 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
             public void onDateSelected(Calendar date, int position) {
                 updateTimetable(date);
             }
+        });
+
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            updateTimetable(selectedDateCalendar);
         });
 
         // Load initial data for today
@@ -126,6 +134,7 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
     }
 
     private void updateTimetable(Calendar calendar) {
+        this.selectedDateCalendar = calendar;
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
         tvDateTitle.setText("Schedule For " + sdf.format(calendar.getTime()));
         fetchSchedulesFromFirebase(calendar.getTime());
@@ -214,10 +223,12 @@ public class DoctorHomeActivity extends AppCompatActivity implements MedicineAda
                     });
 
                     adapter.notifyDataSetChanged();
+                    swipeRefreshLayout.setRefreshing(false);
                 })
                 .addOnFailureListener(e -> {
                     Log.e("DashboardError", "Fetch failed", e);
                     Toast.makeText(this, "Error Loading Schedule", Toast.LENGTH_SHORT).show();
+                    swipeRefreshLayout.setRefreshing(false);
                 });
     }
 

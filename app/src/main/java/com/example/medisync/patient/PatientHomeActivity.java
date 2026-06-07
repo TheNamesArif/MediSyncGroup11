@@ -23,6 +23,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.medisync.R;
 import com.example.medisync.adapter.MedicineAdapter;
@@ -50,6 +51,8 @@ import devs.mulham.horizontalcalendar.utils.HorizontalCalendarListener;
 public class PatientHomeActivity extends AppCompatActivity implements MedicineAdapter.OnIntakeClickListener {
 
     private TextView tvDateTitle;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private Calendar selectedDateCalendar = Calendar.getInstance();
     private MedicineAdapter adapter;
     private final List<MedicineIntake> intakeList = new ArrayList<>();
     private FirebaseFirestore db;
@@ -77,6 +80,7 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
         checkFullScreenIntentPermission();
 
         tvDateTitle = findViewById(R.id.tvDateTitle);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         RecyclerView rvSchedule = findViewById(R.id.rvSchedule);
         rvSchedule.setLayoutManager(new LinearLayoutManager(this));
 
@@ -84,6 +88,10 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
         rvSchedule.setAdapter(adapter);
 
         setupCalendar();
+
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            updateTimetable(selectedDateCalendar);
+        });
 
         // Menu button
         ImageButton imgBtnMenu = findViewById(R.id.imgBtnMenu);
@@ -152,6 +160,7 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
     }
 
     private void updateTimetable(Calendar calendar) {
+        this.selectedDateCalendar = calendar;
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
         tvDateTitle.setText("Schedule For " + sdf.format(calendar.getTime()));
         fetchSchedulesFromFirebase(calendar.getTime());
@@ -256,10 +265,12 @@ public class PatientHomeActivity extends AppCompatActivity implements MedicineAd
                     });
 
                     adapter.notifyDataSetChanged();
+                    swipeRefreshLayout.setRefreshing(false);
                 })
                 .addOnFailureListener(e -> {
                     Log.e("FirestoreError", "Error loading schedule", e);
                     Toast.makeText(this, "Error Loading Schedule", Toast.LENGTH_SHORT).show();
+                    swipeRefreshLayout.setRefreshing(false);
                 });
     }
 

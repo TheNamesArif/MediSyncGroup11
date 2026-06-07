@@ -42,8 +42,8 @@ bool firebaseFetch(std::vector<Medicine>& medicines) {
   http.end();
 
   // Parse JSON
-  DynamicJsonDocument doc(8192);  // increase if you have many medicines
-  DeserializationError err = deserializeJson(doc, payload);
+  DynamicJsonDocument doc(16384);
+  DeserializationError err = deserializeJson(doc, payload, DeserializationOption::NestingLimit(32));
   if (err) {
     Serial.println("JSON parse error: " + String(err.c_str()));
     return false;
@@ -89,11 +89,12 @@ bool firebaseFetch(std::vector<Medicine>& medicines) {
       med.endDateSeconds = mktime(&t);
     }
 
-    // intakeTimes map: { "07:00 PM": "pending", "09:00 PM": "taken", ... }
-    JsonObject timesMap = fields["intakeTimes"]["mapValue"]["fields"].as<JsonObject>();
-    for (JsonPair kv : timesMap) {
-      String timeKey = normalizeTime(String(kv.key().c_str()));
-      String status  = kv.value()["stringValue"].as<String>();
+    // intakeTimes: mapValue { "0": mapValue { time, status }, "1": ... }
+    JsonObject outerMap = fields["intakeTimes"]["mapValue"]["fields"].as<JsonObject>();
+    for (JsonPair kv : outerMap) {
+      JsonObject inner  = kv.value()["mapValue"]["fields"].as<JsonObject>();
+      String timeKey    = normalizeTime(inner["time"]["stringValue"].as<String>());
+      String status     = inner["status"]["stringValue"].as<String>();
       med.intakeTimes[timeKey] = status;
       Serial.println("  Time: " + timeKey + " → " + status);
     }
@@ -125,17 +126,24 @@ bool firebaseUpdateIntakeStatus(const Medicine& med, const String& timeKey, cons
   url += "?updateMask.fieldPaths=intakeTimes&key=";
   url += FIREBASE_API_KEY;
 
-  // Build the full intakeTimes mapValue with the updated entry
-  // We must resend all keys because Firestore replaces the whole field
+  // Build the full intakeTimes mapValue with the updated entry.
+  // Structure: { "0": mapValue { time, status }, "1": mapValue { time, status }, ... }
+  // We must resend all entries because Firestore replaces the whole field.
   DynamicJsonDocument body(4096);
-  JsonObject fields  = body.createNestedObject("fields");
-  JsonObject itField = fields.createNestedObject("intakeTimes");
-  JsonObject mapVal  = itField.createNestedObject("mapValue");
-  JsonObject mapFlds = mapVal.createNestedObject("fields");
+  JsonObject fields   = body.createNestedObject("fields");
+  JsonObject itField  = fields.createNestedObject("intakeTimes");
+  JsonObject outerMap = itField.createNestedObject("mapValue");
+  JsonObject outerFlds = outerMap.createNestedObject("fields");
 
+  int idx = 0;
   for (auto& kv : med.intakeTimes) {
     String val = (kv.first == timeKey) ? status : kv.second;
-    mapFlds[kv.first]["stringValue"] = val;
+    String idxKey = String(idx++);
+    JsonObject inner     = outerFlds.createNestedObject(idxKey);
+    JsonObject innerMap  = inner.createNestedObject("mapValue");
+    JsonObject innerFlds = innerMap.createNestedObject("fields");
+    innerFlds["time"]["stringValue"]   = kv.first;
+    innerFlds["status"]["stringValue"] = val;
   }
 
   String bodyStr;
