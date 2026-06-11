@@ -8,6 +8,7 @@
 
 - [Overview](#overview)
 - [Features](#features)
+- [App UI Screenshots](#app-ui-screenshots)
 - [Hardware](#hardware)
 - [Software & Libraries](#software--libraries)
 - [System Architecture](#system-architecture)
@@ -35,6 +36,29 @@ MediSync is an IoT medicine tracking device built around the **ESP32 microcontro
 - ✅ **Button-driven confirmation** -> first press dismisses the alert; second press confirms intake
 - ⏱️ **Auto-miss after 5 minutes** -> if no response, status is automatically set to `missed`
 - 🔄 **Daily status reset** -> Firebase Cloud Function resets all statuses to `pending` on a schedule
+
+---
+
+## App UI Screenshots
+
+### Authentication & Profile
+| Login | Signup | Forgot Password |
+|:---:|:---:|:---:|
+| <img src="assets/login.png" width="200"> | <img src="assets/signup.png" width="200"> | <img src="assets/forgot_password.png" width="200"> |
+
+| Doctor Profile | Patient Profile | Edit Profile | Change Password |
+|:---:|:---:|:---:|:---:|
+| <img src="assets/doctor_profile.png" width="150"> | <img src="assets/patient_profile.png" width="150"> | <img src="assets/edit_profile.png" width="150"> | <img src="assets/change_password.png" width="150"> |
+
+### Dashboards & Management
+| Doctor Dashboard | Patient Dashboard | Patient Management |
+|:---:|:---:|:---:|
+| <img src="assets/doctor_dashboard.png" width="200"> | <img src="assets/patient_dashboard.png" width="200"> | <img src="assets/patient_management.png" width="200"> |
+
+### Medication Scheduling
+| Create Schedule | Manage Schedule | Update Status |
+|:---:|:---:|:---:|
+| <img src="assets/create_schedule.png" width="200"> | <img src="assets/manage_schedule.png" width="200"> | <img src="assets/update_status.png" width="200"> |
 
 ---
 
