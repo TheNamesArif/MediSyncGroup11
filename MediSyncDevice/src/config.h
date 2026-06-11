@@ -1,13 +1,13 @@
 #pragma once
 
 // ─── WiFi ────────────────────────────────────────────
-#define WIFI_SSID       "WIFI KSJ_2.4G"  // Very unsafe to hardcode credentials, but this is just a demo project :)
-#define WIFI_PASSWORD   "Aishh06_"
+#define WIFI_SSID       "VICTUS-15 RYFT"  // Very unsafe to hardcode credentials, but this is just a demo project :)
+#define WIFI_PASSWORD   "-z4491Q8"
 
 // ─── Firebase ────────────────────────────────────────
 #define FIREBASE_API_KEY   "AIzaSyBsVIf1aIYb3Sey3etQ7XJwo3uCllVeXFU"
 #define PROJECT_ID         "medisync-8c319"
-#define USER_ID            "fMTEj0Wv6vfPx9k6jKQkHeNSJKt2"
+#define USER_ID            "VeLqhHVc2DcMwbOtpC5efaUXls43"
 
 // ─── LCD I2C (Wire  → GPIO 13 SDA, GPIO 12 SCL) ──────
 #define LCD_SDA       13
