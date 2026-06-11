@@ -96,7 +96,11 @@ MediSync is an IoT medicine tracking device built around the **ESP32 microcontro
 
 ## System Architecture
 
+### Hardware & IoT Architecture
 ![System Architecture](assets/system_architecture.png)
+
+### Mobile App Architecture
+![Mobile App Architecture](assets/mobile_app_architecture.jpeg)
 
 ---
 
