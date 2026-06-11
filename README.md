@@ -241,12 +241,12 @@ GET https://<region>-<project-id>.cloudfunctions.net/resetMedicineStatuses
 
 **Group 11** - Diploma in Computer Science, UTM SPACE
 
-| Name  | Role                       |
-|-------|----------------------------|
-| Shaan | Scrum Master & Application |
-| Arif  | Hardware & Application     |
-| Irfan | Application & Report       |
-| Yoha  | Tester & Report            |
+| Name  | Role         |
+|-------|--------------|
+| Shaan | Scrum Master |
+| Arif  | Programmer   |
+| Irfan | Programmer   |
+| Yoha  | Tester       |
 
 
 ---
